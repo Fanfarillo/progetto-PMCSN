@@ -3,8 +3,10 @@
 #include "./headers/servicenode3.h"
 #include "./headers/servicenode4.h"
 #include "./headers/servicenode5.h"
+#include "./dataStructure/eventList.h"
 
 int main(void){
+	struct job j;
 	carArrivals1();
 	familyArrivals1();
 	carDeparture1();
