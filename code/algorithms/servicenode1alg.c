@@ -2,7 +2,6 @@
 #include "../headers/servicenode1.h"
 
 void carArrivals1(void){
-	printf("dummy method\n");
 }
 void familyArrivals1(void){
 	printf("dummy method\n");
