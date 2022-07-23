@@ -2,36 +2,36 @@
 
 struct job {
     long id;
-    long abandonTime;
+    double abandonTime;
     struct job *prev;
     struct job *next; 
 };
 
 struct car_arrival {
-    long carArrivalTime;
+    double carArrivalTime;
     bool isCarArrivalActive;
 };
 
 struct family_arrival {
-    long familyArrivalTime;
+    double familyArrivalTime;
     bool isFamilyArrivalActive;
 };
 
 struct event_list {
     struct car_arrival carArr1;
     struct family_arrival familyArr1;
-    long *completionTimes1;
+    double *completionTimes1;
     struct job *head1;
     struct job *tail1;
     struct family_arrival familyArr2;
-    long *completionTimes2;
+    double *completionTimes2;
     struct job *head2;
     struct job *tail2;
     struct car_arrival carArr3;
     struct family_arrival familyArr3;
-    long *completionTimes3;
+    double *completionTimes3;
     struct family_arrival familyArr4;
-    long *completionTimes4;
+    double *completionTimes4;
     struct family_arrival familyArr5;
-    long *completionTimes5;
+    double *completionTimes5;
 };

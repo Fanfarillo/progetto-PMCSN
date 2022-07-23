@@ -5,4 +5,4 @@ rm servicenode2alg.o
 rm servicenode3alg.o
 rm servicenode4alg.o
 rm servicenode5alg.o
-
+rm rngs.o
