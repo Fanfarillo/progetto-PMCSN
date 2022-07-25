@@ -14,40 +14,95 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define START 0.0
 #define STOP 1000000.0
+
 #define QE 0.4
-#define P 0.5
+#define P_CAR 0.5
+
+#define SERVICE_TIME_1 90
+#define SERVICE_TIME_2 180
+#define SERVICE_TIME_3 240
+#define SERVICE_TIME_4 1800
+#define SERVICE_TIME_5 1800
+#define ABANDON_TIME_1 360
+#define ABANDON_TIME_2 360
 
 struct event_list events;
-struct time t[5];
+struct time t;
 struct area a[5];
 struct state_variables1 sv1[2];		//centers num 1, 3
 struct state_variables2 sv2[3];		//centers num 2, 4, 5
 struct arrival_loss al[5];
 struct arrivals arr;
 
-double rate;
+double interTime;
 
-double exponential(double mu)
+double Exponential(double mu)
 {
-  return (-mu * log(1.0 - Random()));
+	return (-mu * log(1.0 - Random()));
 }
 
 double getCarArrival(double arrival) {
-	arrival += exponential(rate*(1-QE)*P);
-	return (arrival);
+	SelectStream(0);
+	arrival += Exponential(rate*(1-QE)*P_CAR);
+	return arrival;
 }
 
 double getFamilyArrival1(double arrival){
-	arrival += exponential(rate*(1-QE)*(1-P));
-  	return (arrival);
+	SelectStream(1);
+	arrival += Exponential(rate*(1-QE)*(1-P_CAR));
+  	return arrival;
 }
 
 double getFamilyArrival2(double arrival) {
-	arrival += exponential(rate*QE);
-  	return (arrival);
+	SelectStream(2);
+	arrival += Exponential(rate*QE);
+  	return arrival;
+}
+
+double getService1(double start) {
+	SelectStream(3);
+	double departure = start + Exponential(SERVICE_TIME_1);
+  	return departure;
+}
+
+double getService2(double start) {
+	SelectStream(4);
+	double departure = start + Exponential(SERVICE_TIME_2);
+  	return departure;
+}
+
+double getService3(double start) {
+	SelectStream(5);
+	double departure = start + Exponential(SERVICE_TIME_3);
+  	return departure;
+}
+
+double getService4(double start) {
+	SelectStream(6);
+	double departure = start + Exponential(SERVICE_TIME_4);
+  	return departure;
+}
+
+double getService5(double start) {
+	SelectStream(7);
+	double departure = start + Exponential(SERVICE_TIME_5);
+  	return departure;
+}
+
+double getAbandon1(double arrival) {
+	SelectStream(8);
+	double abandon = arrival + Exponential(ABANDON_TIME_1);
+  	return abandon;
+}
+
+double getAbandon2(double arrival) {
+	SelectStream(9);
+	double abandon = arrival + Exponential(ABANDON_TIME_2);
+  	return abandon;
 }
 
 void initializeEventList(int *m) {
@@ -103,10 +158,10 @@ void initializeEventList(int *m) {
 
 void initializeTime() {
 
+	t.current = 0.0;
+	t.next = 0.0;
 	for(int i=0; i<5; i++) {
-		t[i].current = 0.0;
-		t[i].next = 0.0;
-		t[i].last = 0.0;
+		t.last[i] = 0.0;
 	}
 
 }
@@ -178,6 +233,123 @@ void initializeArrivals() {
 
 }
 
+bool isSystemEmpty(int *m) {
+
+	if(sv1[0].qA > 0 || sv1[0].qF > 0 || sv1[1].qA > 0 || sv1[1].qF > 0 || sv2[0].l > 0 || sv2[1].l > 0)
+		return false;
+		
+	for(int i=0; i<m[0]; i++) {
+		if(sv1[0].x[i] != 0)
+			return false;
+	}
+	for(int i=0; i<m[1]; i++) {
+		if(sv2[0].x[i] != 0)
+			return false;
+	}
+	for(int i=0; i<m[2]; i++) {
+		if(sv1[1].x[i] != 0)
+			return false;
+	}
+	for(int i=0; i<m[3]; i++) {
+		if(sv2[1].x[i] != 0)
+			return false;
+	}
+	for(int i=0; i<m[4]; i++) {
+		if(sv2[2].x[i] != 0)
+			return false;
+	}
+
+	return true;
+
+}
+
+double getMinAbandon(struct job *head) {
+
+	double min = head->abandonTime;
+	struct job *current = head;
+
+	while(current != NULL) {
+		if(current->abandonTime < min)
+			min = current->abandonTime;
+		
+		current = current->next;
+	}
+
+	return min;
+
+}
+
+double getSmallest(values) {
+
+	double smallest = (double) INFINITY;
+
+	for(int i=0; i<len(values); i++) {
+		if(values[i] < smallest)
+			smallest = values[i];
+	}
+
+	return smallest;
+
+}
+
+double getMinimumTime(int *m) {
+
+	double minAbandon1 = (double) INFINITY;
+	double minAbandon2 = (double) INFINITY;
+	if(events.head1 != NULL) {
+		minAbandon1 = getMinAbandon(events.head1);
+	}
+	if(events.head2 != NULL) {
+		minAbandon2 = getMinAbandon(events.head2);
+	}
+
+	double minService1 = (double) INFINITY;
+	double minService2 = (double) INFINITY;
+	double minService3 = (double) INFINITY;
+	double minService4 = (double) INFINITY;
+	double minService5 = (double) INFINITY;
+
+	for(int i=0; i<m[0]; i++) {
+		if(events.completionTimes1[i] < minService1)
+			minService1 = events.completionTimes1[i]
+	}
+	for(int i=0; i<m[1]; i++) {
+		if(events.completionTimes2[i] < minService2)
+			minService2 = events.completionTimes2[i]
+	}
+	for(int i=0; i<m[2]; i++) {
+		if(events.completionTimes3[i] < minService3)
+			minService3 = events.completionTimes3[i]
+	}
+	for(int i=0; i<m[3]; i++) {
+		if(events.completionTimes4[i] < minService4)
+			minService4 = events.completionTimes4[i]
+	}
+	for(int i=0; i<m[4]; i++) {
+		if(events.completionTimes5[i] < minService5)
+			minService5 = events.completionTimes5[i]
+	}
+
+	double timesToCompare[14];
+	timesToCompare[0] = minAbandon1;
+	timesToCompare[1] = minAbandon2;
+	timesToCompare[2] = minService1;
+	timesToCompare[3] = minService2;
+	timesToCompare[4] = minService3;
+	timesToCompare[5] = minService4;
+	timesToCompare[6] = minService5;
+	timesToCompare[7] = events.carArr1.carArrivalTime;
+	timesToCompare[8] = events.familyArr1.familyArrivalTime;
+	timesToCompare[9] = events.familyArr2.familyArrivalTime;
+	timesToCompare[10] = events.carArr3.carArrivalTime;
+	timesToCompare[11] = events.familyArr3.familyArrivalTime;
+	timesToCompare[12] = events.familyArr4.familyArrivalTime;
+	timesToCompare[13] = events.familyArr5.familyArrivalTime;
+
+	return getSmallest(timesToCompare);
+
+}
+
 int main(int argc, char **argv){
 
 	if(argc < 7)
@@ -199,33 +371,42 @@ int main(int argc, char **argv){
 
 	switch(interval){
 		case 1:
-			rate = 180.0;
+			interTime = 180.0;
 			break;
 		case 2:
-			rate = 480.0;
+			interTime = 480.0;
 			break;
 		case 3:
-			rate = 60.0;
+			interTime = 60.0;
 			break;
 		case 4:
-			rate = 300.0;
+			interTime = 300.0;
 			break;
 		case 5:
-			rate = 30.0;
+			interTime = 30.0;
 			break;
 		case 6:
-			rate = 180.0;
+			interTime = 180.0;
 			break;
 		default:
 			exit(-3);
 	}
 
-	initializeEventList(m);
 	initializeTime();
 	initializeArea();
 	initializeStateVariables(m);
 	initializeArrivalLoss();
 	initializeArrivals();
+
+	PlantSeeds(7000);
+	initializeEventList(m);
+
+	while(events.carArr1.isCarArrivalActive || events.familyArr1.isFamilyArrivalActive || events.familyArr2.isFamilyArrivalActive || !isSystemEmpty(m)) {
+
+		t.next = getMinimumTime(m);
+		//Per quanto riguarda node, service e queue, devo riadattare il calcolo al caso multiserver.
+
+	}
 
 	carArrival1();
 	familyArrival1();
@@ -244,4 +425,5 @@ int main(int argc, char **argv){
 	arrival5();
 	departure5();
 	return 0;
+
 }

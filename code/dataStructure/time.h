@@ -1,5 +1,5 @@
 struct time {
     double current;
     double next;
-    double last;
+    double last[5];
 };
