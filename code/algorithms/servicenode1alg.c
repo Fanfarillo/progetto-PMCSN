@@ -1,9 +1,9 @@
 #include<stdio.h>
 #include "../headers/servicenode1.h"
 
-void carArrivals1(void){
+void carArrival1(void){
 }
-void familyArrivals1(void){
+void familyArrival1(void){
 	printf("dummy method\n");
 }
 void carDeparture1(void){
