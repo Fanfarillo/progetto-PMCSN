@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 struct job {
-    long id;
+    int id;
     double abandonTime;
     struct job *prev;
     struct job *next; 

@@ -1,14 +1,14 @@
-struct arrivalTime {
+struct arrival_time {
     double timeValue;
-    struct arrivalTime *prev;
-    struct arrivalTime *next;
+    struct arrival_time *prev;
+    struct arrival_time *next;
 };
 
 struct arrivals {
-    struct arrivalTime *head3;
-    struct arrivalTime *tail3;
-    struct arrivalTime *head4;
-    struct arrivalTime *tail4;
-    struct arrivalTime *head5;
-    struct arrivalTime *tail5;
+    struct arrival_time *head3;
+    struct arrival_time *tail3;
+    struct arrival_time *head4;
+    struct arrival_time *tail4;
+    struct arrival_time *head5;
+    struct arrival_time *tail5;
 };

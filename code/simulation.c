@@ -10,6 +10,7 @@
 #include "./dataStructure/stateVariables.h"
 #include "./dataStructure/numArrLoss.h"
 #include "./dataStructure/arrivalTimes.h"
+#include "./dataStructure/utilStructs.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -263,16 +264,38 @@ bool isSystemEmpty(int *m) {
 
 }
 
-double getMinAbandon(struct job *head) {
+struct next_abandon getMinAbandon(struct job *head) {
+	//head must not be NULL
 
-	double min = head->abandonTime;
+	struct next_abandon min;
+	min.jobId = head->id;
+	min.abandonTime = head->abandonTime;
+
 	struct job *current = head;
 
 	while(current != NULL) {
-		if(current->abandonTime < min)
-			min = current->abandonTime;
+		if(current->abandonTime < min.abandonTime)
+			min.jobId = current->id;
+			min.abandonTime = current->abandonTime;
 		
 		current = current->next;
+	}
+
+	return min;
+
+}
+
+struct next_service getMinService(int numServers) {
+
+	struct next_service min;
+	min.serverOffset = 0;
+	min.completionTime = (double) INFINITY;
+
+	for(int i=0; i<numServers; i++) {
+		if(events.completionTimes1[i] < min.completionTime) {
+			min.serverOffset = i;
+			min.completionTime = events.completionTimes1[i];
+		}
 	}
 
 	return min;
@@ -297,38 +320,25 @@ double getMinimumTime(int *m) {
 	double minAbandon1 = (double) INFINITY;
 	double minAbandon2 = (double) INFINITY;
 	if(events.head1 != NULL) {
-		minAbandon1 = getMinAbandon(events.head1);
+		struct next_abandon nextAb1 = getMinAbandon(events.head1);
+		minAbandon1 = nextAb1.abandonTime;
 	}
 	if(events.head2 != NULL) {
-		minAbandon2 = getMinAbandon(events.head2);
+		struct next_abandon nextAb2 = getMinAbandon(events.head2);
+		minAbandon2 = nextAb2.abandonTime;
 	}
 
-	double minService1 = (double) INFINITY;
-	double minService2 = (double) INFINITY;
-	double minService3 = (double) INFINITY;
-	double minService4 = (double) INFINITY;
-	double minService5 = (double) INFINITY;
+	struct next_service nextSer1 = getMinService(m[0]);
+	struct next_service nextSer2 = getMinService(m[1]);
+	struct next_service nextSer3 = getMinService(m[2]);
+	struct next_service nextSer4 = getMinService(m[3]);
+	struct next_service nextSer5 = getMinService(m[4]);
 
-	for(int i=0; i<m[0]; i++) {
-		if(events.completionTimes1[i] < minService1)
-			minService1 = events.completionTimes1[i]
-	}
-	for(int i=0; i<m[1]; i++) {
-		if(events.completionTimes2[i] < minService2)
-			minService2 = events.completionTimes2[i]
-	}
-	for(int i=0; i<m[2]; i++) {
-		if(events.completionTimes3[i] < minService3)
-			minService3 = events.completionTimes3[i]
-	}
-	for(int i=0; i<m[3]; i++) {
-		if(events.completionTimes4[i] < minService4)
-			minService4 = events.completionTimes4[i]
-	}
-	for(int i=0; i<m[4]; i++) {
-		if(events.completionTimes5[i] < minService5)
-			minService5 = events.completionTimes5[i]
-	}
+	double minService1 = nextSer1.completionTime;
+	double minService2 = nextSer2.completionTime;
+	double minService3 = nextSer3.completionTime;
+	double minService4 = nextSer4.completionTime;
+	double minService5 = nextSer5.completionTime;
 
 	double timesToCompare[14];
 	timesToCompare[0] = minAbandon1;
@@ -347,6 +357,18 @@ double getMinimumTime(int *m) {
 	timesToCompare[13] = events.familyArr5.familyArrivalTime;
 
 	return getSmallest(timesToCompare);
+
+}
+
+int countBusyServers(int numServers, int *serverList) {
+
+	int count = 0;
+	for(int i=0; i<numServers; i++) {
+		if(serverList[i] > 0)
+			count++;
+	}
+
+	return count;
 
 }
 
@@ -403,8 +425,43 @@ int main(int argc, char **argv){
 
 	while(events.carArr1.isCarArrivalActive || events.familyArr1.isFamilyArrivalActive || events.familyArr2.isFamilyArrivalActive || !isSystemEmpty(m)) {
 
-		t.next = getMinimumTime(m);
-		//Per quanto riguarda node, service e queue, devo riadattare il calcolo al caso multiserver.
+		t.next = getMinimumTime(m);		//Next event time
+		
+		int xBusy1 = countBusyServers(m[0], sv1[0].x);
+		a[0].service += (t.next - t.current)*xBusy1;
+		a[0].queue += (t.next - t.current)*(sv1[0].qA + sv1[0].qF);
+		a[0].node += (t.next - t.current)*(sv1[0].qA + sv1[0].qF + xBusy1);
+
+		int xBusy2 = countBusyServers(m[1], sv2[0].x);
+		a[1].service += (t.next - t.current)*xBusy2;
+		a[1].queue += (t.next - t.current)*(sv2[0].l - xBusy2);
+		a[1].node += (t.next - t.current)*(sv2[0].l);
+
+		int xBusy3 = countBusyServers(m[2], sv1[1].x);
+		a[2].service += (t.next - t.current)*xBusy3;
+		a[2].queue += (t.next - t.current)*(sv1[1].qA + sv1[1].qF);
+		a[2].node += (t.next - t.current)*(sv1[1].qA + sv1[1].qF + xBusy3);
+
+		int xBusy4 = countBusyServers(m[3], sv2[1].x);
+		a[3].service += (t.next - t.current)*xBusy4;
+		a[3].queue += (t.next - t.current)*(sv2[1].l - xBusy4);
+		a[3].node += (t.next - t.current)*(sv2[1].l);
+
+		int xBusy5 = countBusyServers(m[4], sv2[2].x);
+		a[4].service += (t.next - t.current)*xBusy5;
+		a[4].node += (t.next - t.current)*xBusy5;
+
+		t.current = t.next;		//Clock update
+
+		struct next_abandon nextAb1 = getMinAbandon(events.head1);
+		struct next_abandon nextAb2 = getMinAbandon(events.head2);
+		struct next_service nextSer1 = getMinService(m[1]);
+		struct next_service nextSer2 = getMinService(m[2]);
+		struct next_service nextSer3 = getMinService(m[3]);
+		struct next_service nextSer4 = getMinService(m[4]);
+		struct next_service nextSer5 = getMinService(m[5]);
+
+		if(t.current == events.carArr1.carArrivalTime) {}
 
 	}
 
