@@ -1,5 +1,8 @@
+#include <stdbool.h>
+
 struct arrival_time {
     double timeValue;
+    bool isFamily;
     struct arrival_time *prev;
     struct arrival_time *next;
 };

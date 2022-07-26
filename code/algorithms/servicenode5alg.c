@@ -1,9 +1,58 @@
-#include<stdio.h>
 #include "../headers/servicenode5.h"
+#include "./dataStructure/eventList.h"
+#include "./dataStructure/time.h"
+#include "./dataStructure/area.h"
+#include "./dataStructure/stateVariables.h"
+#include "./dataStructure/numArrLoss.h"
+#include "./dataStructure/arrivalTimes.h"
+#include "./dataStructure/utilStructs.h"
 
-void arrival5(){
-	printf("arrival5\n");
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr){
+
+	alPtr->index_f = alPtr->index_f + 1;
+
+	//Rimozione del nodo testa dalla lista degli arrivi al centro 5 (playground)
+	struct arrival_time *toRemove = arrPtr->head5;
+
+	if(toRemove->next == NULL) {
+		arrPtr->head5 = NULL;
+		arrPtr->tail5 = NULL;
+		eventsPtr->familyArr5.familyArrivalTime = (double) INFINITY;	//Se la lista degli arrivi diventa vuota, vuol dire che per ora non ci sono nuovi arrivi per questo centro
+		tPtr->last[4] = tPtr->current;
+	}
+	else {
+		arrPtr->head5 = toRemove->next;
+		arrPtr->head5->prev = NULL;
+		eventsPtr->familyArr5.familyArrivalTime = arrPtr->head5->timeValue;
+	}
+	free(toRemove);
+
+	int idleOffset = -1;
+	for(int i=0; i<len(svPtr->x); i++) {
+		if(svPtr->x[i] == 0) {		//0 == IDLE
+			idleOffset = i;
+			break;
+		}
+	}
+
+	if(idleOffset >= 0) {
+		svPtr->x[idleOffset] = 1;
+		eventsPtr->completionTimes5[idleOffset] = getService5(tPtr->current);
+	}
+	else {
+		alPtr->numLoss_f = alPtr->numLoss_f + 1;
+	}
+
 }
-void departure5(){
-	printf("departure5\n");
+
+void departure5(struct event_list *eventsPtr, struct state_variables2 *svPtr, int serverOffset){
+	
+	eventsPtr->completionTimes5[serverOffset] = (double) INFINITY;
+	svPtr->x[serverOffset] = 0;
+
 }

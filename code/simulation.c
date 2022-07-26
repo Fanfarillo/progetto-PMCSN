@@ -183,7 +183,7 @@ void initializeStateVariables(int *m) {
 	sv1[0].qF = 0;
 	sv1[0].x = (int *) malloc(sizeof(int)*m[0]);
 	for(int i=0; i<m[0]; i++) {
-		sv1[0].x[i] = 0;	//0=IDLE, 1=BUSY_A, 2=BUSY_F
+		sv1[0].x[i] = 0;	//0=IDLE, 1=BUSY_F, 2=BUSY_A
 	}
 
 	sv2[0].l = 0;
@@ -196,7 +196,7 @@ void initializeStateVariables(int *m) {
 	sv1[1].qF = 0;
 	sv1[1].x = (int *) malloc(sizeof(int)*m[2]);
 	for(int i=0; i<m[2]; i++) {
-		sv1[1].x[i] = 0;	//0=IDLE, 1=BUSY_A, 2=BUSY_F
+		sv1[1].x[i] = 0;	//0=IDLE, 1=BUSY_F, 2=BUSY_A
 	}
 
 	sv2[1].l = 0;
@@ -264,37 +264,46 @@ bool isSystemEmpty(int *m) {
 
 }
 
-struct next_abandon getMinAbandon(struct job *head) {
-	//head must not be NULL
+struct next_abandon *getMinAbandon(struct job *head) {
 
-	struct next_abandon min;
-	min.jobId = head->id;
-	min.abandonTime = head->abandonTime;
+	struct next_abandon *min = (struct next_abandon *) malloc(sizeof(struct next_abandon));
 
-	struct job *current = head;
+	if(head != NULL) {
+		min->jobId = head->id;
+		min->abandonTime = head->abandonTime;
 
-	while(current != NULL) {
-		if(current->abandonTime < min.abandonTime)
-			min.jobId = current->id;
-			min.abandonTime = current->abandonTime;
+		struct job *current = head;
+
+		while(current != NULL) {
+			if(current->abandonTime < min->abandonTime)
+				min->jobId = current->id;
+				min->abandonTime = current->abandonTime;
 		
-		current = current->next;
+			current = current->next;
+		}
+	}
+
+	else {
+		min->jobId = -1;
+		min->abandonTime = (double) INFINITY;
 	}
 
 	return min;
 
 }
 
-struct next_service getMinService(int numServers) {
+struct next_completion *getMinCompletion(int numServers, int *x) {
 
-	struct next_service min;
-	min.serverOffset = 0;
-	min.completionTime = (double) INFINITY;
+	struct next_completion *min = (struct next_completion *) malloc(sizeof(struct next_completion));
+	min->serverOffset = 0;
+	min->isFamily = true;
+	min->completionTime = (double) INFINITY;
 
 	for(int i=0; i<numServers; i++) {
-		if(events.completionTimes1[i] < min.completionTime) {
-			min.serverOffset = i;
-			min.completionTime = events.completionTimes1[i];
+		if(events.completionTimes1[i] < min->completionTime) {
+			min->serverOffset = i;
+			min->isFamily = (bool) (x[i]==1);
+			min->completionTime = events.completionTimes1[i];
 		}
 	}
 
@@ -320,25 +329,25 @@ double getMinimumTime(int *m) {
 	double minAbandon1 = (double) INFINITY;
 	double minAbandon2 = (double) INFINITY;
 	if(events.head1 != NULL) {
-		struct next_abandon nextAb1 = getMinAbandon(events.head1);
-		minAbandon1 = nextAb1.abandonTime;
+		struct next_abandon *nextAb1 = getMinAbandon(events.head1);
+		minAbandon1 = nextAb1->abandonTime;
 	}
 	if(events.head2 != NULL) {
-		struct next_abandon nextAb2 = getMinAbandon(events.head2);
-		minAbandon2 = nextAb2.abandonTime;
+		struct next_abandon *nextAb2 = getMinAbandon(events.head2);
+		minAbandon2 = nextAb2->abandonTime;
 	}
 
-	struct next_service nextSer1 = getMinService(m[0]);
-	struct next_service nextSer2 = getMinService(m[1]);
-	struct next_service nextSer3 = getMinService(m[2]);
-	struct next_service nextSer4 = getMinService(m[3]);
-	struct next_service nextSer5 = getMinService(m[4]);
+	struct next_completion *nextCom1 = getMinCompletion(m[0], sv1[0].x);
+	struct next_completion *nextCom2 = getMinCompletion(m[1], sv2[0].x);
+	struct next_completion *nextCom3 = getMinCompletion(m[2], sv1[1].x);
+	struct next_completion *nextCom4 = getMinCompletion(m[3], sv2[1].x);
+	struct next_completion *nextCom5 = getMinCompletion(m[4], sv2[2].x);
 
-	double minService1 = nextSer1.completionTime;
-	double minService2 = nextSer2.completionTime;
-	double minService3 = nextSer3.completionTime;
-	double minService4 = nextSer4.completionTime;
-	double minService5 = nextSer5.completionTime;
+	double minService1 = nextCom1->completionTime;
+	double minService2 = nextCom2->completionTime;
+	double minService3 = nextCom3->completionTime;
+	double minService4 = nextCom4->completionTime;
+	double minService5 = nextCom5->completionTime;
 
 	double timesToCompare[14];
 	timesToCompare[0] = minAbandon1;
@@ -355,6 +364,14 @@ double getMinimumTime(int *m) {
 	timesToCompare[11] = events.familyArr3.familyArrivalTime;
 	timesToCompare[12] = events.familyArr4.familyArrivalTime;
 	timesToCompare[13] = events.familyArr5.familyArrivalTime;
+
+	free(nextAb1);
+	free(nextAb2);
+	free(nextCom1);
+	free(nextCom2);
+	free(nextCom3);
+	free(nextCom4);
+	free(nextCom5);
 
 	return getSmallest(timesToCompare);
 
@@ -453,34 +470,75 @@ int main(int argc, char **argv){
 
 		t.current = t.next;		//Clock update
 
-		struct next_abandon nextAb1 = getMinAbandon(events.head1);
-		struct next_abandon nextAb2 = getMinAbandon(events.head2);
-		struct next_service nextSer1 = getMinService(m[1]);
-		struct next_service nextSer2 = getMinService(m[2]);
-		struct next_service nextSer3 = getMinService(m[3]);
-		struct next_service nextSer4 = getMinService(m[4]);
-		struct next_service nextSer5 = getMinService(m[5]);
+		struct next_abandon *nextAb1 = getMinAbandon(events.head1);
+		struct next_abandon *nextAb2 = getMinAbandon(events.head2);
+		struct next_completion *nextCom1 = getMinCompletion(m[1], sv1[0].x);
+		struct next_completion *nextCom2 = getMinCompletion(m[2], sv2[0].x);
+		struct next_completion *nextCom3 = getMinCompletion(m[3], sv1[1].x);
+		struct next_completion *nextCom4 = getMinCompletion(m[4], sv2[1].x);
+		struct next_completion *nextCom5 = getMinCompletion(m[5], sv2[2].x);
 
-		if(t.current == events.carArr1.carArrivalTime) {}
+		if(t.current == events.carArr1.carArrivalTime) {
+			carArrival1(&events, &t, &sv1[0], &al[0], &arr);
+		}
+		else if(t.current == events.familyArr1.familyArrivalTime) {
+			familyArrival1(&events, &t, &sv1[0], &al[0], &arr);
+		}
+		else if(t.current == nextCom1->completionTime && !nextCom1->isFamily) {
+			carDeparture1(&events, &t, &sv1[0], &al[0], &arr, nextCom1->serverOffset);
+		}
+		else if(t.current == nextCom1->completionTime && nextCom1->isFamily) {
+			familyDeparture1(&events, &t, &sv1[0], &al[0], &arr, nextCom1->serverOffset);
+		}
+		else if(t.current == nextAb1->abandonTime) {
+			abandon1(&events, &t, &sv1[0], &al[0], &arr, nextAb1->jobId);
+		}
+		else if(t.current == events.familyArr2.familyArrivalTime) {
+			arrival2(&events, &t, &sv2[0], &al[1]);
+		}
+		else if(t.current == nextCom2->completionTime) {
+			departure2(&events, &t, &sv2[0], &arr, nextCom2->serverOffset);
+		}
+		else if(t.current == nextAb2->abandonTime) {
+			abandon2(&events, &sv2[0], &al[1], nextAb2->jobId);
+		}
+		else if(t.current == events.carArr3.carArrivalTime) {
+			carArrival3(&events, &t, &sv1[1], &al[2], &arr);
+		}
+		else if(t.current == events.familyArr3.familyArrivalTime) {
+			familyArrival3(&events, &t, &sv1[1], &al[2], &arr);
+		}
+		else if(t.current == nextCom3->completionTime && !nextCom3->isFamily) {
+			carDeparture3(&events, &t, &sv1[1], &al[2], &arr, nextCom3->serverOffset);
+		}
+		else if(t.current == nextCom3->completionTime && nextCom3->isFamily) {
+			familyDeparture3(&events, &t, &sv1[1], &al[2], &arr, nextCom3->serverOffset);
+		}
+		else if(t.current == events.familyArr4.familyArrivalTime) {
+			arrival4(&events, &t, &sv2[1], &al[3], &arr);
+		}
+		else if(t.current == nextCom4->completionTime) {
+			departure4(&events, &t, &sv2[1], &al[3], &arr, nextCom4->serverOffset);
+		}
+		else if(t.current == events.familyArr5.familyArrivalTime) {
+			arrival5(&events, &t, &sv2[2], &al[4], &arr);
+		}
+		else if(t.current == nextCom5->completionTime) {
+			departure5(&events, &sv2[2], nextCom5->serverOffset);
+		}
+
+		free(nextAb1);
+		free(nextAb2);
+		free(nextCom1);
+		free(nextCom2);
+		free(nextCom3);
+		free(nextCom4);
+		free(nextCom5);			
 
 	}
 
-	carArrival1();
-	familyArrival1();
-	carDeparture1();
-	familyDeparture1();
-	abandon1();
-	arrival2();
-	departure2();
-	abandon2();
-	carArrival3();
-	familyArrival3();
-	carDeparture3();
-	familyDeparture3();
-	arrival4();
-	departure4();
-	arrival5();
-	departure5();
+	//TODO: recuperare le statistiche di output e invocare la free() per tutte le aree di memoria allocate dinamicamente
+
 	return 0;
 
 }
