@@ -1,3 +1,6 @@
+#ifndef ARRIVALTIMES_H		//header guard
+#define ARRIVALTIMES_H
+
 #include <stdbool.h>
 
 struct arrival_time {
@@ -7,6 +10,11 @@ struct arrival_time {
     struct arrival_time *next;
 };
 
+/**
+	liste doppiamente correlate in cui indico i tempi di arrivo dei job
+	in base alle partenze dai centri precedenti
+**/
+
 struct arrivals {
     struct arrival_time *head3;
     struct arrival_time *tail3;
@@ -15,3 +23,5 @@ struct arrivals {
     struct arrival_time *head5;
     struct arrival_time *tail5;
 };
+
+#endif

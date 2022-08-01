@@ -1,3 +1,6 @@
+#ifndef EVENTLIST_H		//header guard
+#define EVENTLIST_H
+
 #include <stdbool.h>
 
 struct job {
@@ -35,3 +38,5 @@ struct event_list {
     struct family_arrival familyArr5;
     double *completionTimes5;
 };
+
+#endif

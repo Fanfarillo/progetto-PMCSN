@@ -1,11 +1,12 @@
-#include "../headers/servicenode5.h"
-#include "./dataStructure/eventList.h"
-#include "./dataStructure/time.h"
-#include "./dataStructure/area.h"
-#include "./dataStructure/stateVariables.h"
-#include "./dataStructure/numArrLoss.h"
-#include "./dataStructure/arrivalTimes.h"
-#include "./dataStructure/utilStructs.h"
+#include "../headers/servicenode5.h"/*
+#include "../dataStructure/eventList.h"
+#include "../dataStructure/time.h"
+#include "../dataStructure/area.h"
+#include "../dataStructure/stateVariables.h"
+#include "../dataStructure/numArrLoss.h"
+#include "../dataStructure/arrivalTimes.h"
+#include "../dataStructure/utilStructs.h"*/
+#include "../headers/randomGeneratorFunctions.h"
 
 #include <stdio.h>
 #include <math.h>

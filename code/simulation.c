@@ -4,13 +4,14 @@
 #include "./headers/servicenode4.h"
 #include "./headers/servicenode5.h"
 #include "./headers/rngs.h"
+#include "./headers/randomGeneratorFunctions.h"/*
 #include "./dataStructure/eventList.h"
 #include "./dataStructure/time.h"
 #include "./dataStructure/area.h"
 #include "./dataStructure/stateVariables.h"
 #include "./dataStructure/numArrLoss.h"
 #include "./dataStructure/arrivalTimes.h"
-#include "./dataStructure/utilStructs.h"
+#include "./dataStructure/utilStructs.h"*/
 
 #include <stdio.h>
 #include <math.h>
@@ -39,72 +40,7 @@ struct state_variables2 sv2[3];		//centers num 2, 4, 5
 struct arrival_loss al[5];
 struct arrivals arr;
 
-double interTime;
 
-double Exponential(double mu)
-{
-	return (-mu * log(1.0 - Random()));
-}
-
-double getCarArrival(double arrival) {
-	SelectStream(0);
-	arrival += Exponential(rate*(1-QE)*P_CAR);
-	return arrival;
-}
-
-double getFamilyArrival1(double arrival){
-	SelectStream(1);
-	arrival += Exponential(rate*(1-QE)*(1-P_CAR));
-  	return arrival;
-}
-
-double getFamilyArrival2(double arrival) {
-	SelectStream(2);
-	arrival += Exponential(rate*QE);
-  	return arrival;
-}
-
-double getService1(double start) {
-	SelectStream(3);
-	double departure = start + Exponential(SERVICE_TIME_1);
-  	return departure;
-}
-
-double getService2(double start) {
-	SelectStream(4);
-	double departure = start + Exponential(SERVICE_TIME_2);
-  	return departure;
-}
-
-double getService3(double start) {
-	SelectStream(5);
-	double departure = start + Exponential(SERVICE_TIME_3);
-  	return departure;
-}
-
-double getService4(double start) {
-	SelectStream(6);
-	double departure = start + Exponential(SERVICE_TIME_4);
-  	return departure;
-}
-
-double getService5(double start) {
-	SelectStream(7);
-	double departure = start + Exponential(SERVICE_TIME_5);
-  	return departure;
-}
-
-double getAbandon1(double arrival) {
-	SelectStream(8);
-	double abandon = arrival + Exponential(ABANDON_TIME_1);
-  	return abandon;
-}
-
-double getAbandon2(double arrival) {
-	SelectStream(9);
-	double abandon = arrival + Exponential(ABANDON_TIME_2);
-  	return abandon;
-}
 
 void initializeEventList(int *m) {
 
@@ -227,8 +163,10 @@ void initializeArrivals() {
 
 	arr.head3 = NULL;
 	arr.tail3 = NULL;
+	
 	arr.head4 = NULL;
 	arr.tail4 = NULL;
+	
 	arr.head5 = NULL;
 	arr.tail5 = NULL;
 
@@ -275,10 +213,10 @@ struct next_abandon *getMinAbandon(struct job *head) {
 		struct job *current = head;
 
 		while(current != NULL) {
-			if(current->abandonTime < min->abandonTime)
+			if(current->abandonTime < min->abandonTime){
 				min->jobId = current->id;
 				min->abandonTime = current->abandonTime;
-		
+			}
 			current = current->next;
 		}
 	}
@@ -311,7 +249,7 @@ struct next_completion *getMinCompletion(int numServers, int *x) {
 
 }
 
-double getSmallest(values) {
+double getSmallest(double *values) {
 
 	double smallest = (double) INFINITY;
 
@@ -328,7 +266,11 @@ double getMinimumTime(int *m) {
 
 	double minAbandon1 = (double) INFINITY;
 	double minAbandon2 = (double) INFINITY;
+	struct next_abandon *nextAb1 = NULL;
+	struct next_abandon *nextAb2 = NULL;
+	
 	if(events.head1 != NULL) {
+		//almeno un job che deve abbandonare
 		struct next_abandon *nextAb1 = getMinAbandon(events.head1);
 		minAbandon1 = nextAb1->abandonTime;
 	}
@@ -479,19 +421,19 @@ int main(int argc, char **argv){
 		struct next_completion *nextCom5 = getMinCompletion(m[5], sv2[2].x);
 
 		if(t.current == events.carArr1.carArrivalTime) {
-			carArrival1(&events, &t, &sv1[0], &al[0], &arr);
+			carArrival1(&events, &t, &sv1[0], &al[0]);
 		}
 		else if(t.current == events.familyArr1.familyArrivalTime) {
-			familyArrival1(&events, &t, &sv1[0], &al[0], &arr);
+			familyArrival1(&events, &t, &sv1[0], &al[0]);
 		}
 		else if(t.current == nextCom1->completionTime && !nextCom1->isFamily) {
-			carDeparture1(&events, &t, &sv1[0], &al[0], &arr, nextCom1->serverOffset);
+			carDeparture1(&events, &t, &sv1[0], &arr, nextCom1->serverOffset);
 		}
 		else if(t.current == nextCom1->completionTime && nextCom1->isFamily) {
-			familyDeparture1(&events, &t, &sv1[0], &al[0], &arr, nextCom1->serverOffset);
+			familyDeparture1(&events, &t, &sv1[0], &arr, nextCom1->serverOffset);
 		}
 		else if(t.current == nextAb1->abandonTime) {
-			abandon1(&events, &t, &sv1[0], &al[0], &arr, nextAb1->jobId);
+			abandon1(&events, &sv1[0], &al[0], nextAb1->jobId);
 		}
 		else if(t.current == events.familyArr2.familyArrivalTime) {
 			arrival2(&events, &t, &sv2[0], &al[1]);
@@ -509,16 +451,16 @@ int main(int argc, char **argv){
 			familyArrival3(&events, &t, &sv1[1], &al[2], &arr);
 		}
 		else if(t.current == nextCom3->completionTime && !nextCom3->isFamily) {
-			carDeparture3(&events, &t, &sv1[1], &al[2], &arr, nextCom3->serverOffset);
+			carDeparture3(&events, &t, &sv1[1], &arr, nextCom3->serverOffset);
 		}
 		else if(t.current == nextCom3->completionTime && nextCom3->isFamily) {
-			familyDeparture3(&events, &t, &sv1[1], &al[2], &arr, nextCom3->serverOffset);
+			familyDeparture3(&events, &t, &sv1[1], &arr, nextCom3->serverOffset);
 		}
 		else if(t.current == events.familyArr4.familyArrivalTime) {
 			arrival4(&events, &t, &sv2[1], &al[3], &arr);
 		}
 		else if(t.current == nextCom4->completionTime) {
-			departure4(&events, &t, &sv2[1], &al[3], &arr, nextCom4->serverOffset);
+			departure4(&events, &t, &sv2[1], &arr, nextCom4->serverOffset);
 		}
 		else if(t.current == events.familyArr5.familyArrivalTime) {
 			arrival5(&events, &t, &sv2[2], &al[4], &arr);

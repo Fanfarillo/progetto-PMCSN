@@ -1,3 +1,6 @@
+#ifndef UTILSTRUCTS_H		//header guard
+#define UTILSTRUCTS_H
+
 #include <stdbool.h>
 
 struct next_abandon {
@@ -10,3 +13,5 @@ struct next_completion {
     bool isFamily;
     double completionTime; 
 };
+
+#endif

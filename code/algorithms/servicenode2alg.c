@@ -1,11 +1,12 @@
-#include "../headers/servicenode2.h"
-#include "./dataStructure/eventList.h"
-#include "./dataStructure/time.h"
-#include "./dataStructure/area.h"
-#include "./dataStructure/stateVariables.h"
-#include "./dataStructure/numArrLoss.h"
-#include "./dataStructure/arrivalTimes.h"
-#include "./dataStructure/utilStructs.h"
+#include "../headers/servicenode2.h"/*
+#include "../dataStructure/eventList.h"
+#include "../dataStructure/time.h"
+#include "../dataStructure/area.h"
+#include "../dataStructure/stateVariables.h"
+#include "../dataStructure/numArrLoss.h"
+#include "../dataStructure/arrivalTimes.h"
+#include "../dataStructure/utilStructs.h"*/
+#include "../headers/randomGeneratorFunctions.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -13,16 +14,21 @@
 #include <stdbool.h>
 
 #define N 3
+#define STOP 1000000.0
 
 void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr){
 
+	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
+	//incremento la popolazione di 1
 	svPtr->l = svPtr->l + 1;
+	//genero l'istante di tempo del prossimo arrivo della famiglia
 	eventsPtr->familyArr2.familyArrivalTime = getFamilyArrival2(tPtr->current);
 
 	if(eventsPtr->familyArr2.familyArrivalTime > STOP) {
 		eventsPtr->familyArr2.familyArrivalTime = (double) INFINITY;
 		eventsPtr->familyArr2.isFamilyArrivalActive = false;
+		//l'istante dell'arrivo che sto processando
 		tPtr->last[1] = tPtr->current;
 	}
 
@@ -44,6 +50,7 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		struct job *tailJob = (struct job *) malloc(sizeof(struct job));
 		tailJob->id = alPtr->index_f;
 		tailJob->abandonTime = getAbandon2(tPtr->current);
+		//inserimento in coda
 		tailJob->next = NULL;
 		tailJob->prev = eventsPtr->tail2;
 
@@ -77,8 +84,12 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 		}
 		free(toRemove);
 	}
+	
+	//TODO: debugging
+	int n = sizeof(svPtr->x)/sizeof(int);
 
-	if(svPtr->l > 0) {
+	if(svPtr->l >= n) {
+		//almeno un job in coda e genero il suo tempo di completamento
 		eventsPtr->completionTimes2[serverOffset] = getService2(tPtr->current);
 	}
 	else {
@@ -88,12 +99,13 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 
 	//Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al centro 3 (withdraw food)
 	struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
+	//viene dal centro delle casse automatiche
 	tailArrival->isFamily = true;
 	tailArrival->timeValue = tPtr->current;
 	tailArrival->next = NULL;
 	tailArrival->prev = arrPtr->tail3;
 
-	if(eventsPtr->tail2 != NULL) {
+	if(arrPtr->tail3 != NULL) {
 		arrPtr->tail3->next = tailArrival;
 	}
 	else {
@@ -118,14 +130,14 @@ void abandon2(struct event_list *eventsPtr, struct state_variables2 *svPtr, stru
 	struct job *successor = current->next;
 
 	if(previous != NULL) {
-		previous->next = current->next;
+		previous->next = successor;
 	}
 	else {
 		eventsPtr->head2 = successor;
 	}
 	
 	if(successor != NULL) {
-		successor->prev = current->prev;
+		successor->prev = previous;
 	}
 	else {
 		eventsPtr->tail2 = previous;
