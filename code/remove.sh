@@ -6,3 +6,4 @@ rm servicenode3alg.o
 rm servicenode4alg.o
 rm servicenode5alg.o
 rm rngs.o
+rm randomGeneratorFunctions.o

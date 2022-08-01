@@ -16,7 +16,7 @@
 #define STOP 1000000.0
 #define N 3
 
-void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr){
+void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len){
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_a = alPtr->index_a + 1;
 	//genero l'istante di tempo del prossimo arrivo della famiglia
@@ -31,7 +31,8 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}
 
 	int idleOffset = -1;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
 			break;
@@ -39,7 +40,8 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}
 
 	bool existsCar = false;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
 			break;
@@ -59,7 +61,7 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 
 
 
-void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr){
+void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len){
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
 	//genero l'istante di tempo del prossimo arrivo della famiglia
@@ -73,7 +75,8 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	}
 
 	int idleOffset = -1;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
 			break;
@@ -81,7 +84,8 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	}
 	
 	bool existsCar = false;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
 			break;
@@ -164,11 +168,12 @@ void carDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state
 }
 
 
-void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset){
+void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len){
 
 	
 	bool existsCar = false;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
 			break;

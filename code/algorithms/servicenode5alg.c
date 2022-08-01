@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr){
+void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
 
 	alPtr->index_f = alPtr->index_f + 1;
 
@@ -34,7 +34,8 @@ void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	free(toRemove);
 
 	int idleOffset = -1;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
 			break;

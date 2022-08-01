@@ -16,7 +16,7 @@
 #define N 3
 #define STOP 1000000.0
 
-void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr){
+void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len){
 
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
@@ -33,7 +33,8 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	}
 
 	int idleOffset = -1;
-	for(int i=0; i<len(svPtr->x); i++) {
+	//for(int i=0; i<len(svPtr->x); i++) {
+	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
 			break;
@@ -44,7 +45,8 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		svPtr->x[idleOffset] = 1;
 		eventsPtr->completionTimes2[idleOffset] = getService2(tPtr->current);
 	}
-	else if(svPtr->l > N + len(svPtr->x)) {
+	//else if(svPtr->l > N + len(svPtr->x)) {
+	else if(svPtr->l > N + len) {
 		//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
 
 		struct job *tailJob = (struct job *) malloc(sizeof(struct job));
