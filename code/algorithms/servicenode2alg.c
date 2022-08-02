@@ -68,7 +68,7 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 
 }
 
-void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset){
+void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n){
 
 	svPtr->l = svPtr->l - 1;
 
@@ -87,8 +87,6 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 		free(toRemove);
 	}
 	
-	//TODO: debugging
-	int n = sizeof(svPtr->x)/sizeof(int);
 
 	if(svPtr->l >= n) {
 		//almeno un job in coda e genero il suo tempo di completamento

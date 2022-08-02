@@ -49,11 +49,10 @@ void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		eventsPtr->completionTimes4[idleOffset] = getService4(tPtr->current);
 	}
 }
-void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset){
+void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n){
 	svPtr->l = svPtr->l - 1;
 	
-	//TODO: debugging
-	int n = sizeof(svPtr->x)/sizeof(int);	
+	
 
 	if(svPtr->l >= n) {
 		//almeno un job in coda e genero il suo tempo di completamento

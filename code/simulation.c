@@ -6,6 +6,7 @@
 #include "./headers/rngs.h"
 #include "./headers/randomGeneratorFunctions.h"
 #include <stdio.h>
+#include<string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -510,6 +511,34 @@ int countBusyServers(int numServers, int *serverList) {
 
 }
 
+FILE** createStatisticFiles(){
+	int length = strlen("/home/ubuntu/progettoPMSN/progetto-PMCSN/code/servicenode.dat")+10;
+	char *filename;
+	FILE **fps = (FILE**) malloc(sizeof(FILE *)*5);
+	if(fps==NULL)
+		errorMalloc(-200);
+	
+	for(int i = 0; i < 5; i++){
+		filename = (char *) malloc(length);
+		//printf("%d\n", i);
+		FILE *fp;
+   		if(sprintf(filename,"/home/ubuntu/progettoPMSN/progetto-PMCSN/code/servicenode%d.dat", i+1)<0)
+   			exit(-800);
+   		//printf("%s", filename);
+   		fp = fopen(filename, "w");
+   		//printf("%s", filename);
+   		if(fp==NULL){
+   			printf("errore\n");
+   			exit(-89);
+   		}
+   		free(filename);
+   		fps[i] = fp;   		
+	}
+
+	
+	return fps;
+}
+
 int main(int argc, char **argv){
 
 	if(argc < 7){
@@ -664,7 +693,7 @@ int main(int argc, char **argv){
 			arrival2(events, t, &sv2[0], &al[1], m[1]);
 		}
 		else if(t->current == nextCom2->completionTime) {
-			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset);
+			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1]);
 		}
 		else if(t->current == nextAb2->abandonTime) {
 			abandon2(events, &sv2[0], &al[1], nextAb2->jobId);
@@ -685,7 +714,7 @@ int main(int argc, char **argv){
 			arrival4(events, t, &sv2[1], &al[3], arr, m[3]);
 		}
 		else if(t->current == nextCom4->completionTime) {
-			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset);
+			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3]);
 		}
 		else if(t->current == events->familyArr5.familyArrivalTime) {
 			arrival5(events, t, &sv2[2], &al[4], arr, m[4]);
@@ -704,18 +733,180 @@ int main(int argc, char **argv){
 
 	}
 	
+	
 	verify();
-	
-	
-	//printf("n = %f\nq = %f\nrho = %f\n", n, q, rho);
-	printf("numero abbandoni = %d\n", al[0].numLoss_f);
-	printf("numero abbandoni = %d\n", al[1].numLoss_f);
-	printf("numero abbandoni = %d\n", al[2].numLoss_f);
-	printf("numero abbandoni = %d\n", al[3].numLoss_f);
-	printf("numero abbandoni = %d\n", al[4].numLoss_f);
-	fflush(stdout); 
 
-	//TODO: recuperare le statistiche di output e invocare la free() per tutte le aree di memoria allocate dinamicamente
+	//TODO: invocare la free() per tutte le aree di memoria allocate dinamicamente
+	
+	FILE ** fps = createStatisticFiles();
+	
+	char *rho, *q, *serv, *n, *delay, *wait, *interArr, *fam;
+	
+	
+	for(int i = 0; i < 5; i++){
+		rho = (char *)malloc(30);
+		q = (char *)malloc(30);
+		serv = (char *)malloc(30);
+		n = (char *)malloc(30);
+		delay = (char *)malloc(30);
+		wait = (char *)malloc(30);
+		interArr = (char *)malloc(30);
+		fam = (char *)malloc(30);
+		
+		
+		sprintf(rho, "%f\n", a[i].service/(t->current * m[i]));
+		fputs(rho, fps[i]);
+		
+		
+		sprintf(q, "%f\n", a[i].queue/t->current);
+		printf("a[%d].queue = %f", i, a[i].queue);
+		fputs(q, fps[i]);
+		
+		sprintf(n, "%f\n", a[i].node/t->current);
+		printf("a[%d].node = %f", i, a[i].node);
+		fputs(n, fps[i]);
+		
+		sprintf(serv, "%f\n", a[i].service/((al[i].index_a + al[i].index_f))*m[i]);
+		fputs(serv, fps[i]);	
+		
+		sprintf(delay, "%f\n", a[i].queue/(al[i].index_a + al[i].index_f));
+		fputs(delay, fps[i]);
+		
+		sprintf(wait, "%f\n", a[i].node/(al[i].index_a + al[i].index_f));
+		fputs(wait, fps[i]);
+		
+		sprintf(interArr, "%f\n", t->last[i]/(al[i].index_a + al[i].index_f));
+		fputs(interArr, fps[i]);
+		
+		sprintf(fam, "%f\n", (double)al[i].index_f);
+		fputs(fam, fps[i]);
+		
+		free(rho);
+		free(q);
+		free(n);
+		free(serv);
+		free(delay);
+		free(wait);
+		free(interArr);
+		free(fam);
+	}
+
+	
+	//utilizzazione
+	/*
+	double rho_1 = a[0].service/t->current;
+	double rho_2 = a[1].service/t->current;
+	double rho_3 = a[2].service/t->current;
+	double rho_4 = a[3].service/t->current;
+	double rho_5 = a[4].service/t->current;
+	
+	//popolazione media nelle code
+	double q_1 = a[0].queue/t->current;
+	double q_2 = a[1].queue/t->current;
+	double q_3 = a[2].queue/t->current;
+	double q_4 = a[3].queue/t->current;
+	double q_5 = a[4].queue/t->current;
+	
+	//popolazione media nel centro
+	double n_1 = a[0].node/t->current;
+	double n_2 = a[1].node/t->current;
+	double n_3 = a[2].node/t->current;
+	double n_4 = a[3].node/t->current;
+	double n_5 = a[4].node/t->current;
+	
+	//tempo di servizio medio
+	double serv0 = a[0].service/(al[0].index_a + al[0].index_f);
+	double serv1 = a[1].service/(al[1].index_a + al[1].index_f);
+	double serv2 = a[2].service/(al[2].index_a + al[2].index_f);
+	double serv3 = a[3].service/(al[3].index_a + al[3].index_f);
+	double serv4 = a[4].service/(al[4].index_a + al[4].index_f);
+	
+	//tempo di attesa medio nella coda
+	double delay1 = a[0].queue/(al[0].index_a + al[0].index_f);
+	double delay2 = a[1].queue/(al[1].index_a + al[1].index_f);
+	double delay3 = a[2].queue/(al[2].index_a + al[2].index_f);
+	double delay4 = a[3].queue/(al[3].index_a + al[3].index_f);
+	double delay5 = a[4].queue/(al[4].index_a + al[4].index_f);
+	
+	//tempo di risposta medio
+	double wait1 = a[0].node/(al[0].index_a + al[0].index_f);
+	double wait2 = a[1].node/(al[1].index_a + al[1].index_f);
+	double wait3 = a[2].node/(al[2].index_a + al[2].index_f);
+	double wait4 = a[3].node/(al[3].index_a + al[3].index_f);
+	double wait5 = a[4].node/(al[4].index_a + al[4].index_f);
+	
+	//tempo di interarrivo
+	double interArr1 = t->last[0]/(al[0].index_a + al[0].index_f);
+	double interArr2 = t->last[1]/(al[1].index_a + al[1].index_f);
+	double interArr3 = t->last[2]/(al[2].index_a + al[2].index_f);
+	double interArr4 = t->last[3]/(al[3].index_a + al[3].index_f);
+	double interArr5 = t->last[4]/(al[4].index_a + al[4].index_f);
+	
+	
+	//numero arrivi famiglie
+	double fam1 = al[0].index_f;
+	double fam2 = al[1].index_f;
+	double fam3 = al[2].index_f;
+	double fam4 = al[3].index_f;
+	double fam5 = al[4].index_f;*/
+
+	
+		//percentuale di perdita per i centri 1, 2 e 5
+	
+	double lossProb1 = al[0].numLoss_f/al[0].index_f;
+	double lossProb2 = al[1].numLoss_f/al[1].index_f;
+	double lossProb3 = al[4].numLoss_f/al[4].index_f;
+	
+	//numero perdite
+	
+	double loss1 = al[0].numLoss_f;
+	double loss2 = al[1].numLoss_f;
+	double loss5 = al[4].numLoss_f;
+	printf("loss1: %f\n", loss1);
+	printf("loss2: %f\n", loss2);
+	printf("loss5: %f\n", loss5);
+	
+
+	char *lossProbStr;
+	char *lossStr;
+	
+	for(int i = 0; i<3; i++){
+		lossProbStr = (char *)malloc(30);
+		lossStr = (char *)malloc(30);
+		printf("b\n");
+		if(i==2)
+		{
+			sprintf(lossProbStr, "%f\n", (double)al[i+2].numLoss_f/(double)al[i+2].index_f);
+			fputs(lossProbStr, fps[i+2]);
+			sprintf(lossStr, "%f\n", (double)al[i+2].numLoss_f);
+			fputs(lossStr, fps[i+2]);			
+		}	
+		sprintf(lossProbStr, "%f\n", (double)al[i].numLoss_f/(double)al[i].index_f);
+		fputs(lossProbStr, fps[i]);
+		sprintf(lossStr, "%f\n", (double)al[i].numLoss_f);
+		fputs(lossStr, fps[i]);	
+	}
+	
+	//numero arrivi macchine
+	/*
+	double car1 = al[0].index_a;
+	double car2 = al[2].index_a;*/
+	char *carStr;
+	for(int i = 0; i<3;i = i + 2){
+		carStr = (char *)malloc(30);
+		sprintf(carStr, "%f\n", (double)al[i].index_a);
+		fputs(carStr, fps[i]);
+		//printf("c\n");
+	}
+	
+	for(int i = 0; i<5;i++){
+		//printf("d\n");
+		fclose(fps[i]);
+	}	
+	
+	
+	
+	
 	printf("fine...\n");
 	fflush(stdout);
 
