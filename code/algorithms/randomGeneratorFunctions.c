@@ -3,7 +3,7 @@
 #include <math.h>
 
 #define QE 0.4
-#define P_CAR 0.5
+#define P_CAR 0.8
 
 #define SERVICE_TIME_1 90
 #define SERVICE_TIME_2 180
@@ -23,19 +23,19 @@ double Exponential(double mu)
 
 double getCarArrival(double arrival) {
 	SelectStream(0);
-	arrival += Exponential(interTime*(1-QE)*P_CAR);
+	arrival += Exponential(interTime/(1-QE)/P_CAR);
 	return arrival;
 }
 
 double getFamilyArrival1(double arrival){
 	SelectStream(1);
-	arrival += Exponential(interTime*(1-QE)*(1-P_CAR));
+	arrival += Exponential(interTime/(1-QE)/(1-P_CAR));
   	return arrival;
 }
 
 double getFamilyArrival2(double arrival) {
 	SelectStream(2);
-	arrival += Exponential(interTime*QE);
+	arrival += Exponential(interTime/QE);
   	return arrival;
 }
 

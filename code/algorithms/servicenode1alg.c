@@ -91,29 +91,31 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 			break;
 		}
 	}
+	printf("qf = %d\n",svPtr->qA);fflush(stdout);
 
 	if(idleOffset >= 0 && svPtr->qF == 0 && (existsCar || svPtr->qA == 0)) {
 		svPtr->x[idleOffset] = 1;
 		eventsPtr->completionTimes1[idleOffset] = getService1(tPtr->current);
-	}
-	else if(svPtr->qF > N) {
-		//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
+	}else{
+		if(svPtr->qF > N) {
+			//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
+			struct job *tailJob = (struct job *) malloc(sizeof(struct job));
+			tailJob->id = alPtr->index_f;
+			tailJob->abandonTime = getAbandon1(tPtr->current);
+			//inserimento in coda
+			tailJob->next = NULL;
+			tailJob->prev = eventsPtr->tail1;
 
-		struct job *tailJob = (struct job *) malloc(sizeof(struct job));
-		tailJob->id = alPtr->index_f;
-		tailJob->abandonTime = getAbandon1(tPtr->current);
-		//inserimento in coda
-		tailJob->next = NULL;
-		tailJob->prev = eventsPtr->tail1;
+			if(eventsPtr->tail1 != NULL) {
+				eventsPtr->tail1->next = tailJob;
+			}
+			else {
+				eventsPtr->head1 = tailJob;
+			}
+			eventsPtr->tail1 = tailJob;
 
-		if(eventsPtr->tail1 != NULL) {
-			eventsPtr->tail1->next = tailJob;
 		}
-		else {
-			eventsPtr->head1 = tailJob;
-		}
-		eventsPtr->tail1 = tailJob;
-
+		svPtr->qF++;
 	}
 
 }
