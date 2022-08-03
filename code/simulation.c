@@ -83,17 +83,14 @@ void deallocateDataStructures() {
 void initializeEventList(int *m) {
 
 	events->carArr1.carArrivalTime = getCarArrival(START);
-	printf("carArrival: %f\n", events->carArr1.carArrivalTime);
-	fflush(stdout);
+	//printf("carArrival: %f\n", events->carArr1.carArrivalTime);
 	events->carArr1.isCarArrivalActive = true;
 	events->familyArr1.familyArrivalTime = getFamilyArrival1(START);
-	printf("familyArrival: %f\n", events->familyArr1.familyArrivalTime);
-	fflush(stdout);
+	//printf("familyArrival: %f\n", events->familyArr1.familyArrivalTime);
 	events->familyArr1.isFamilyArrivalActive = true;
 
 	events->familyArr2.familyArrivalTime = getFamilyArrival2(START);
-	printf("familyArrival2 (electr): %f\n", events->familyArr2.familyArrivalTime);
-	fflush(stdout);
+	//printf("familyArrival2 (electr): %f\n", events->familyArr2.familyArrivalTime);
 	events->familyArr2.isFamilyArrivalActive = true;
 
 	events->carArr3.carArrivalTime = (double) INFINITY;
@@ -652,53 +649,103 @@ int main(int argc, char **argv){
 		struct next_completion *nextCom5 = getMinCompletion(m[4], sv2[2].x, 5);
 
 		if(t->current == events->carArr1.carArrivalTime) {
+			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
 			carArrival1(events, t, &sv1[0], &al[0], m[0]);
 		}
 		else if(t->current == events->familyArr1.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
 			familyArrival1(events, t, &sv1[0], &al[0], m[0]);
 		}
 		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
+			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
 			carDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset);
 		}
 		else if(t->current == nextCom1->completionTime && nextCom1->isFamily) {
+			printf("EVENTO: partenza di una famiglia dal centro 1.\n");
 			familyDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0]);
 		}
 		else if(t->current == nextAb1->abandonTime) {
+			printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
 			abandon1(events, &sv1[0], &al[0], nextAb1->jobId);
 		}
 		else if(t->current == events->familyArr2.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
 			arrival2(events, t, &sv2[0], &al[1], m[1]);
 		}
 		else if(t->current == nextCom2->completionTime) {
+			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
 			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1]);
 		}
 		else if(t->current == nextAb2->abandonTime) {
+			printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
 			abandon2(events, &sv2[0], &al[1], nextAb2->jobId);
 		}
 		else if(t->current == events->carArr3.carArrivalTime) {
+			printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
 			carArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
 		}
 		else if(t->current == events->familyArr3.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
 			familyArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
 		}
 		else if(t->current == nextCom3->completionTime && !nextCom3->isFamily) {
+			printf("EVENTO: partenza di un'automobile dal centro 3.\n");
 			carDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset);
 		}
 		else if(t->current == nextCom3->completionTime && nextCom3->isFamily) {
+			printf("EVENTO: partenza di una famiglia dal centro 3.\n");
 			familyDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2]);
 		}
 		else if(t->current == events->familyArr4.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
 			arrival4(events, t, &sv2[1], &al[3], arr, m[3]);
 		}
 		else if(t->current == nextCom4->completionTime) {
+			printf("EVENTO: partenza di una famiglia dal centro 4.\n");
 			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3]);
 		}
 		else if(t->current == events->familyArr5.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
 			arrival5(events, t, &sv2[2], &al[4], arr, m[4]);
 		}
 		else if(t->current == nextCom5->completionTime) {
+			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
 			departure5(events, &sv2[2], nextCom5->serverOffset);
 		}
+
+		printf("qA centro 1: %d\n", sv1[0].qA);
+		printf("qF centro 1: %d\n", sv1[0].qF);
+		printf("Serventi centro 1: ");
+		for(int k=0; k<m[0]; k++) {
+			printf("%d, ", sv1[0].x[k]);
+		}
+		printf("\n");
+		printf("l centro 2: %d\n", sv2[0].l);
+		printf("Serventi centro 2: ");
+		for(int k=0; k<m[1]; k++) {
+			printf("%d, ", sv2[0].x[k]);
+		}
+		printf("\n");
+		printf("qA centro 3: %d\n", sv1[1].qA);
+		printf("qF centro 3: %d\n", sv1[1].qF);
+		printf("Serventi centro 3: ");
+		for(int k=0; k<m[2]; k++) {
+			printf("%d, ", sv1[1].x[k]);
+		}
+		printf("\n");
+		printf("l centro 4: %d\n", sv2[1].l);
+		printf("Serventi centro 4: ");
+		for(int k=0; k<m[3]; k++) {
+			printf("%d, ", sv2[1].x[k]);
+		}
+		printf("\n");
+		printf("Serventi centro 5: ");
+		for(int k=0; k<m[4]; k++) {
+			printf("%d, ", sv2[2].x[k]);
+		}
+		printf("\n");
+		printf("Clock: %f\n\n\n", t->current);
+		fflush(stdout);
 
 		free(nextAb1);
 		free(nextAb2);
