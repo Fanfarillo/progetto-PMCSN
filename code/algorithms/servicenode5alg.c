@@ -1,11 +1,4 @@
-#include "../headers/servicenode5.h"/*
-#include "../dataStructure/eventList.h"
-#include "../dataStructure/time.h"
-#include "../dataStructure/area.h"
-#include "../dataStructure/stateVariables.h"
-#include "../dataStructure/numArrLoss.h"
-#include "../dataStructure/arrivalTimes.h"
-#include "../dataStructure/utilStructs.h"*/
+#include "../headers/servicenode5.h"
 #include "../headers/randomGeneratorFunctions.h"
 
 #include <stdio.h>
@@ -34,7 +27,6 @@ void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	free(toRemove);
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;

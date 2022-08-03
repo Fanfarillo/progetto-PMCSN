@@ -1,18 +1,9 @@
-#include<stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include "../headers/servicenode4.h"/*
-#include "../headers/rngs.h"
-#include "../dataStructure/eventList.h"
-#include "../dataStructure/time.h"
-#include "../dataStructure/area.h"
-#include "../dataStructure/stateVariables.h"
-#include "../dataStructure/numArrLoss.h"
-#include "../dataStructure/arrivalTimes.h"
-#include "../dataStructure/utilStructs.h"*/
+#include "../headers/servicenode4.h"
 #include "../headers/randomGeneratorFunctions.h"
 
-#define qP 0.32
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
 void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
 	//incremento il numero delle famiglie che arrivano al centro
@@ -36,7 +27,6 @@ void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	free(toRemove);
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
@@ -63,8 +53,7 @@ void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 		svPtr->x[serverOffset] = 0;
 	}
 
-	//TODO: sistemare il generatore random in modo da utilizzare un solo generatore ma con il suo stream
-	if(getPlayProb() < qP){
+	if(getPlayProb() < QP){
 		
 		struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
 		tailArrival->isFamily = true;

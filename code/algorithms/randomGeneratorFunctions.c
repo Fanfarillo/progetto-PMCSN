@@ -2,9 +2,6 @@
 #include "../headers/rngs.h"
 #include <math.h>
 
-#define QE 0.4
-#define P_CAR 0.8
-
 #define SERVICE_TIME_1 90
 #define SERVICE_TIME_2 180
 #define SERVICE_TIME_3 240
@@ -12,7 +9,6 @@
 #define SERVICE_TIME_5 1800
 #define ABANDON_TIME_1 360
 #define ABANDON_TIME_2 360
-
 
 double interTime;
 

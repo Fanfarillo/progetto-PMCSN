@@ -1,20 +1,10 @@
-#include "../headers/servicenode2.h"/*
-#include "../dataStructure/eventList.h"
-#include "../dataStructure/time.h"
-#include "../dataStructure/area.h"
-#include "../dataStructure/stateVariables.h"
-#include "../dataStructure/numArrLoss.h"
-#include "../dataStructure/arrivalTimes.h"
-#include "../dataStructure/utilStructs.h"*/
+#include "../headers/servicenode2.h"
 #include "../headers/randomGeneratorFunctions.h"
 
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-#define N 3
-#define STOP 1000000.0
 
 void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len){
 
@@ -33,7 +23,6 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	}
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
@@ -45,7 +34,6 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		svPtr->x[idleOffset] = 1;
 		eventsPtr->completionTimes2[idleOffset] = getService2(tPtr->current);
 	}
-	//else if(svPtr->l > N + len(svPtr->x)) {
 	else if(svPtr->l > N + len) {
 		//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
 
@@ -99,7 +87,7 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 
 	//Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al centro 3 (withdraw food)
 	struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
-	//viene dal centro delle casse automatiche
+	 
 	tailArrival->isFamily = true;
 	tailArrival->timeValue = tPtr->current;
 	tailArrival->next = NULL;

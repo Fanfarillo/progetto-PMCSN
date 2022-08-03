@@ -1,3 +1,12 @@
+#define START 0.0
+#define STOP 1000000.0
+#define N 3
+
+#define P_CAR 0.8
+#define QE 0.4
+#define QT 0.3
+#define QP 0.3
+
 double Exponential(double mu);
 double getCarArrival(double arrival);
 double getFamilyArrival1(double arrival);

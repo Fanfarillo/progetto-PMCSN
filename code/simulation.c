@@ -5,14 +5,12 @@
 #include "./headers/servicenode5.h"
 #include "./headers/rngs.h"
 #include "./headers/randomGeneratorFunctions.h"
+
 #include <stdio.h>
-#include<string.h>
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-#define START 0.0
-#define STOP 1000000.0
 
 struct event_list *events;
 struct time *t;
@@ -22,44 +20,64 @@ struct state_variables2 *sv2;		//centers num 2, 4, 5
 struct arrival_loss *al;
 struct arrivals *arr;
 
-void errorMalloc(int code){
-	printf("Errore malloc...\n");
+void errorMalloc(int code) {
+
+	printf("ERRORE: impossibile allocare nuova memoria nell'heap.\n");
+	fflush(stdout);
 	exit(code);
+
 }
 
-void allocateDataStructure(){
+void errorVerify(int code) {
+
+	printf("ERRORE: le statistiche di output della simulazione non sono consistenti.\n");
+	fflush(stdout);
+	exit(code);
+
+}
+
+void allocateDataStructures() {
+
 	events = (struct event_list *) malloc(sizeof(struct event_list));
-	if(events == NULL)
-		errorMalloc(-9);
+	if(events==NULL)
+		errorMalloc(-1001);
 		
 	t = (struct time *) malloc(sizeof(struct time));
 	if(t==NULL)
-		errorMalloc(-10);
+		errorMalloc(-1002);
 		
 	a = (struct area *) malloc(sizeof(struct area)*5);
 	if(a==NULL)
-		errorMalloc(-11);
+		errorMalloc(-1003);
 		
-	sv1 = (struct state_variables1 *)malloc(sizeof(struct state_variables1) * 2);
+	sv1 = (struct state_variables1 *) malloc(sizeof(struct state_variables1) * 2);
 	if(sv1==NULL)
-		errorMalloc(-12);
+		errorMalloc(-1004);
 		
-	sv2 = (struct state_variables2 *)malloc(sizeof(struct state_variables2)*3);
+	sv2 = (struct state_variables2 *) malloc(sizeof(struct state_variables2)*3);
 	if(sv2==NULL)
-		errorMalloc(-13);
-	
-	
+		errorMalloc(-1005);
+		
 	al = (struct arrival_loss *) malloc(sizeof(struct arrival_loss)*5);
 	if(al ==NULL)
-		errorMalloc(-14);
+		errorMalloc(-1006);
 		
 	arr = (struct arrivals *) malloc(sizeof(struct arrivals));
 	if(arr == NULL)
-		errorMalloc(-15);
-		
-	printf("Allocate data structures...\n");
-	fflush(stdout);
+		errorMalloc(-1007);
 	
+}
+
+void deallocateDataStructures() {
+
+	free(events);
+	free(t);
+	free(a);
+	free(sv1);
+	free(sv2);
+	free(al);
+	free(arr);
+
 }
 
 void initializeEventList(int *m) {
@@ -96,19 +114,19 @@ void initializeEventList(int *m) {
 
 	events->completionTimes1 = (double *) malloc(sizeof(double)*m[0]);
 	if(events->completionTimes1==NULL)
-		errorMalloc(-16);
+		errorMalloc(-1008);
 	events->completionTimes2 = (double *) malloc(sizeof(double)*m[1]);
 	if(events->completionTimes2==NULL)
-		errorMalloc(-17);
+		errorMalloc(-1009);
 	events->completionTimes3 = (double *) malloc(sizeof(double)*m[2]);
 	if(events->completionTimes3==NULL)
-		errorMalloc(-18);
+		errorMalloc(-1010);
 	events->completionTimes4 = (double *) malloc(sizeof(double)*m[3]);
 	if(events->completionTimes4==NULL)
-		errorMalloc(-19);
+		errorMalloc(-1011);
 	events->completionTimes5 = (double *) malloc(sizeof(double)*m[4]);
 	if(events->completionTimes5==NULL)
-		errorMalloc(-20);
+		errorMalloc(-1012);
 
 	for(int i=0; i<m[0]; i++) {
 		events->completionTimes1[i] = (double) INFINITY;
@@ -125,10 +143,6 @@ void initializeEventList(int *m) {
 	for(int i=0; i<m[4]; i++) {
 		events->completionTimes5[i] = (double) INFINITY;
 	}
-	
-	printf("Event list...\n");
-	fflush(stdout);
-
 
 }
 
@@ -139,9 +153,6 @@ void initializeTime() {
 	for(int i=0; i<5; i++) {
 		t->last[i] = 0.0;
 	}
-	
-	printf("Time...\n");
-	fflush(stdout);
 
 }
 
@@ -152,8 +163,6 @@ void initializeArea() {
 		a[i].queue = 0.0;
 		a[i].service = 0.0;
 	}
-	printf("Area...\n");
-	fflush(stdout);
 
 }
 
@@ -162,22 +171,18 @@ void initializeStateVariables(int *m) {
 	sv1[0].qA = 0;
 	sv1[0].qF = 0;
 	sv1[0].x = (int *) malloc(sizeof(int)*m[0]);
-	if(sv1[0].x==NULL){
-		printf("Errore malloc...\n");
-		fflush(stdout);
-		exit(-4);
-	}
+	if(sv1[0].x==NULL)
+		errorMalloc(-1013);
+	
 	for(int i=0; i<m[0]; i++) {
 		sv1[0].x[i] = 0;	//0=IDLE, 1=BUSY_F, 2=BUSY_A
 	}
 
 	sv2[0].l = 0;
 	sv2[0].x = (int *) malloc(sizeof(int)*m[1]);
-	if(sv2[0].x==NULL){
-		printf("Errore malloc...\n");
-		fflush(stdout);
-		exit(-5);
-	}
+	if(sv2[0].x==NULL)
+		errorMalloc(-1014);
+
 	for(int i=0; i<m[1]; i++) {
 		sv2[0].x[i] = 0;	//0=IDLE, 1=BUSY
 	}
@@ -185,38 +190,30 @@ void initializeStateVariables(int *m) {
 	sv1[1].qA = 0;
 	sv1[1].qF = 0;
 	sv1[1].x = (int *) malloc(sizeof(int)*m[2]);
-	if(sv1[1].x==NULL){
-		printf("Errore malloc...\n");
-		fflush(stdout);
-		exit(-6);
-	}
+	if(sv1[1].x==NULL)
+		errorMalloc(-1015);
+
 	for(int i=0; i<m[2]; i++) {
 		sv1[1].x[i] = 0;	//0=IDLE, 1=BUSY_F, 2=BUSY_A
 	}
 
 	sv2[1].l = 0;
 	sv2[1].x = (int *) malloc(sizeof(int)*m[3]);
-	if(sv2[1].x==NULL){
-		printf("Errore malloc...\n");
-		fflush(stdout);
-		exit(-7);
-	}
+	if(sv2[1].x==NULL)
+		errorMalloc(-1016);
+
 	for(int i=0; i<m[3]; i++) {
 		sv2[1].x[i] = 0;	//0=IDLE, 1=BUSY
 	}
 
 	sv2[2].l = 0;  			//unuseful
 	sv2[2].x = (int *) malloc(sizeof(int)*m[4]);
-	if(sv2[2].x==NULL){
-		printf("Errore malloc...\n");
-		fflush(stdout);
-		exit(-8);
-	}
+	if(sv2[2].x==NULL)
+		errorMalloc(-1017);
+
 	for(int i=0; i<m[4]; i++) {
 		sv2[2].x[i] = 0;	//0=IDLE, 1=BUSY
 	}
-	printf("State Variables...\n");
-	fflush(stdout);
 
 }
 
@@ -227,8 +224,6 @@ void initializeArrivalLoss() {
 		al[i].index_f = 0;
 		al[i].numLoss_f = 0;
 	}
-	printf("Arrival loss...\n");
-	fflush(stdout);
 
 }
 
@@ -242,9 +237,6 @@ void initializeArrivals() {
 	
 	arr->head5 = NULL;
 	arr->tail5 = NULL;
-	
-	printf("Arrivals...\n");
-	fflush(stdout);
 
 }
 
@@ -331,8 +323,9 @@ struct next_completion *getMinCompletion(int numServers, int *x, int index) {
 				completionTimes = events->completionTimes5;
 				break;
 			default:
-				printf("Errore indice...\n");
-				exit(-21);
+				printf("ERRORE: il terzo parametro della funzione getMinCompletion() deve essere un valore intero compreso tra 1 e 5.\n");
+				fflush(stdout);
+				exit(-4);
 	}
 
 	for(int i=0; i<numServers; i++) {
@@ -390,7 +383,6 @@ double getMinimumTime(int *m) {
 	double minService4 = nextCom4->completionTime;
 	double minService5 = nextCom5->completionTime;
 
-	//double timesToCompare[14];
 	double timesToCompare[len];
 	timesToCompare[0] = minAbandon1;
 	//printf("%f\n", timesToCompare[0]);
@@ -433,72 +425,6 @@ double getMinimumTime(int *m) {
 
 }
 
-void verify(){
-	double rho_0 = a[0].service/t->current;
-	double q_0 = a[0].queue/t->current;
-	double n_0 = a[0].node/t->current;
-	if(n_0 - (q_0 + rho_0) > 0.00001)
-		exit(-100);
-		
-	double rho_1 = a[1].service/t->current;
-	double q_1 = a[1].queue/t->current;
-	double n_1 = a[1].node/t->current;
-	if(n_1 - (q_1 + rho_1) > 0.00001)
-		exit(-101);
-		
-	double rho_2 = a[2].service/t->current;
-	double q_2 = a[2].queue/t->current;
-	double n_2 = a[2].node/t->current;
-	if(n_2 - (q_2 + rho_2) > 0.00001)
-		exit(-102);
-		
-	double rho_3 = a[3].service/t->current;
-	double q_3 = a[3].queue/t->current;
-	double n_3 = a[3].node/t->current;
-	if(n_3 - (q_3 + rho_3) > 0.00001)
-		exit(-103);
-		
-		
-	double rho_4 = a[4].service/t->current;
-	double q_4 = a[4].queue/t->current;
-	double n_4 = a[4].node/t->current;
-	if(n_4 - (q_4 + rho_4) > 0.00001)
-		exit(-104);
-		
-	
-	
-	double rho_00 = a[0].service/(al[0].index_a + al[0].index_f);
-	double q_00 = a[0].queue/(al[0].index_a + al[0].index_f);
-	double n_00 = a[0].node/(al[0].index_a + al[0].index_f);
-	if(n_00 - (q_00 + rho_00) > 0.00001)
-		exit(-110);
-		
-	double rho_01 = a[1].service/(al[1].index_a + al[1].index_f);
-	double q_01 = a[1].queue/(al[1].index_a + al[1].index_f);
-	double n_01 = a[1].node/(al[1].index_a + al[1].index_f);
-	if(n_01 - (q_01 + rho_01) > 0.00001)
-		exit(-111);
-		
-	double rho_02 = a[2].service/(al[2].index_a + al[2].index_f);
-	double q_02 = a[2].queue/(al[2].index_a + al[2].index_f);
-	double n_02 = a[2].node/(al[2].index_a + al[2].index_f);
-	if(n_02 - (q_02 + rho_02) > 0.00001)
-		exit(-112);
-		
-	double rho_03 = a[3].service/(al[3].index_a + al[3].index_f);
-	double q_03 = a[3].queue/(al[3].index_a + al[3].index_f);
-	double n_03 = a[3].node/(al[3].index_a + al[3].index_f);
-	if(n_03 - (q_03 + rho_03) > 0.00001)
-		exit(-113);
-		
-		
-	double rho_04 = a[4].service/(al[4].index_a + al[4].index_f);
-	double q_04 = a[4].queue/(al[4].index_a + al[4].index_f);
-	double n_04 = a[4].node/(al[4].index_a + al[4].index_f);
-	if(n_04 - (q_04 + rho_04) > 0.00000000000000001)
-		exit(-114);
-}
-
 int countBusyServers(int numServers, int *serverList) {
 
 	int count = 0;
@@ -511,30 +437,96 @@ int countBusyServers(int numServers, int *serverList) {
 
 }
 
+void verify(){
+
+	double rho_0 = a[0].service/t->current;
+	double q_0 = a[0].queue/t->current;
+	double n_0 = a[0].node/t->current;
+	if(n_0 - (q_0 + rho_0) > 0.000001)
+		errorVerify(-2000);
+		
+	double rho_1 = a[1].service/t->current;
+	double q_1 = a[1].queue/t->current;
+	double n_1 = a[1].node/t->current;
+	if(n_1 - (q_1 + rho_1) > 0.000001)
+		errorVerify(-2001);
+		
+	double rho_2 = a[2].service/t->current;
+	double q_2 = a[2].queue/t->current;
+	double n_2 = a[2].node/t->current;
+	if(n_2 - (q_2 + rho_2) > 0.000001)
+		errorVerify(-2002);
+		
+	double rho_3 = a[3].service/t->current;
+	double q_3 = a[3].queue/t->current;
+	double n_3 = a[3].node/t->current;
+	if(n_3 - (q_3 + rho_3) > 0.000001)
+		errorVerify(-2003);
+				
+	double rho_4 = a[4].service/t->current;
+	double q_4 = a[4].queue/t->current;
+	double n_4 = a[4].node/t->current;
+	if(n_4 - (q_4 + rho_4) > 0.000001)
+		errorVerify(-2004);	
+	
+	double s_0 = a[0].service/(al[0].index_a + al[0].index_f);
+	double tq_0 = a[0].queue/(al[0].index_a + al[0].index_f);
+	double ts_0 = a[0].node/(al[0].index_a + al[0].index_f);
+	if(ts_0 - (tq_0 + s_0) > 0.000001)
+		errorVerify(-2005);
+		
+	double s_1 = a[1].service/(al[1].index_a + al[1].index_f);
+	double tq_1 = a[1].queue/(al[1].index_a + al[1].index_f);
+	double ts_1 = a[1].node/(al[1].index_a + al[1].index_f);
+	if(ts_1 - (tq_1 + s_1) > 0.000001)
+		errorVerify(-2006);
+		
+	double s_2 = a[2].service/(al[2].index_a + al[2].index_f);
+	double tq_2 = a[2].queue/(al[2].index_a + al[2].index_f);
+	double ts_2 = a[2].node/(al[2].index_a + al[2].index_f);
+	if(ts_2 - (tq_2 + s_2) > 0.000001)
+		errorVerify(-2007);
+		
+	double s_3 = a[3].service/(al[3].index_a + al[3].index_f);
+	double tq_3 = a[3].queue/(al[3].index_a + al[3].index_f);
+	double ts_3 = a[3].node/(al[3].index_a + al[3].index_f);
+	if(ts_3 - (tq_3 + s_3) > 0.000001)
+		errorVerify(-2008);	
+		
+	double s_4 = a[4].service/(al[4].index_a + al[4].index_f);
+	double tq_4 = a[4].queue/(al[4].index_a + al[4].index_f);
+	double ts_4 = a[4].node/(al[4].index_a + al[4].index_f);
+	if(ts_4 - (tq_4 + s_4) > 0.000001)
+		errorVerify(-2009);
+
+}
+
 FILE** createStatisticFiles(){
-	int length = strlen("/home/ubuntu/progettoPMSN/progetto-PMCSN/code/servicenode.dat")+10;
+
+	int length = strlen("servicenode.dat")+2;
 	char *filename;
+
 	FILE **fps = (FILE**) malloc(sizeof(FILE *)*5);
 	if(fps==NULL)
-		errorMalloc(-200);
+		errorMalloc(-1018);
 	
 	for(int i = 0; i < 5; i++){
-		filename = (char *) malloc(length);
-		//printf("%d\n", i);
 		FILE *fp;
-   		if(sprintf(filename,"/home/ubuntu/progettoPMSN/progetto-PMCSN/code/servicenode%d.dat", i+1)<0)
-   			exit(-800);
-   		//printf("%s", filename);
+
+		filename = (char *) malloc(length);
+		if(filename==NULL)
+			errorMalloc(-1019);
+
+   		sprintf(filename,"servicenode%d.dat", i+1);
    		fp = fopen(filename, "w");
-   		//printf("%s", filename);
    		if(fp==NULL){
-   			printf("errore\n");
-   			exit(-89);
+   			printf("ERRORE: impossibile creare il file %s.\n", filename);
+			fflush(stdout);
+   			exit(-5);
    		}
    		free(filename);
    		fps[i] = fp;   		
 	}
-
 	
 	return fps;
 }
@@ -542,7 +534,8 @@ FILE** createStatisticFiles(){
 int main(int argc, char **argv){
 
 	if(argc < 7){
-		printf("errore nei parametri...\n");
+		printf("ERRORE: i parametri passati in input al programma sono errati.\n");
+		printf("Formato richiesto: NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, FASCIA_ORARIA.\n");
 		fflush(stdout);
 		exit(-1);
 	}
@@ -551,9 +544,7 @@ int main(int argc, char **argv){
 	m = (int *)malloc(sizeof(int)*(5));
 
 	if(m==NULL){
-		printf("Errore malloc...\n");
-		fflush(stdout);
-		exit(-2);
+		errorMalloc(-1000);
 	}
 
 	m[0] = atoi(argv[1]);
@@ -561,6 +552,14 @@ int main(int argc, char **argv){
 	m[2] = atoi(argv[3]);
 	m[3] = atoi(argv[4]);
 	m[4] = atoi(argv[5]);
+
+	for(int i=0; i<5; i++) {
+		if(m[i]<=0) {
+			printf("ERRORE: il numero di serventi specificato non è valido. Fornire un valore intero strettamente positivo.\n");
+			fflush(stdout);
+			exit(-2);
+		}
+	}
 
 	int interval = atoi(argv[6]);
 
@@ -584,42 +583,26 @@ int main(int argc, char **argv){
 			interTime = 180.0;
 			break;
 		default:
-			printf("Errore nello switch...\n");
+			printf("ERRORE: la fascia oraria specificata non è valida. Fornire un valore intero compreso tra 1 e 6.\n");
 			fflush(stdout);
 			exit(-3);
 	}
-	
-	//printf("%f\n", interTime);
-	//printf("%d %d %d %d %d\n", m[0], m[1], m[2], m[3], m[4]);
-	//fflush(stdout);
-	
 
-	allocateDataStructure();
+	allocateDataStructures();
 	initializeTime();	
 	initializeArea();
 	initializeStateVariables(m);
 	initializeArrivalLoss();
-	initializeArrivals();
-	
+	initializeArrivals();	
 
 	PlantSeeds(7000);
-	
-	//printf("PlanSeeds...\n");
-	//fflush(stdout);
-	
-	
+
 	initializeEventList(m);
 
 	while(events->carArr1.isCarArrivalActive || events->familyArr1.isFamilyArrivalActive || events->familyArr2.isFamilyArrivalActive || !isSystemEmpty(m)) {
 
-		
-
 		t->next = getMinimumTime(m);		//Next event time
-		
-		//printf("next occurence: %f\n", t->next);
-		//fflush(stdout);
-		
-		
+
 		int xBusy1 = countBusyServers(m[0], sv1[0].x);
 		a[0].service += (t->next - t->current)*xBusy1;
 		//printf("service: %f\n", a[0].service);
@@ -659,8 +642,6 @@ int main(int argc, char **argv){
 		//printf("node: %f\n", a[4].node);
 
 		t->current = t->next;		//Clock update
-		
-		//printf("current: %f\n", t->current);
 
 		struct next_abandon *nextAb1 = getMinAbandon(events->head1);
 		struct next_abandon *nextAb2 = getMinAbandon(events->head2);
@@ -669,10 +650,6 @@ int main(int argc, char **argv){
 		struct next_completion *nextCom3 = getMinCompletion(m[2], sv1[1].x, 3);
 		struct next_completion *nextCom4 = getMinCompletion(m[3], sv2[1].x, 4);
 		struct next_completion *nextCom5 = getMinCompletion(m[4], sv2[2].x, 5);
-		
-		//printf("ok...\n");
-		//fflush(stdout);
-		
 
 		if(t->current == events->carArr1.carArrivalTime) {
 			carArrival1(events, t, &sv1[0], &al[0], m[0]);
@@ -733,51 +710,50 @@ int main(int argc, char **argv){
 
 	}
 	
-	
 	verify();
-
-	//TODO: invocare la free() per tutte le aree di memoria allocate dinamicamente
 	
-	FILE ** fps = createStatisticFiles();
-	
-	char *rho, *q, *serv, *n, *delay, *wait, *interArr, *fam;
-	
-	
+	FILE ** fps = createStatisticFiles();	
+	char *rho, *q, *n, *serv, *delay, *wait, *interArr, *fam;
+		
 	for(int i = 0; i < 5; i++){
 		rho = (char *)malloc(30);
 		q = (char *)malloc(30);
-		serv = (char *)malloc(30);
 		n = (char *)malloc(30);
+		serv = (char *)malloc(30);
 		delay = (char *)malloc(30);
 		wait = (char *)malloc(30);
 		interArr = (char *)malloc(30);
-		fam = (char *)malloc(30);
+		fam = (char *)malloc(30);		
 		
-		
+		//utilizzazione
 		sprintf(rho, "%f\n", a[i].service/(t->current * m[i]));
-		fputs(rho, fps[i]);
+		fputs(rho, fps[i]);		
 		
-		
+		//popolazione media nelle code
 		sprintf(q, "%f\n", a[i].queue/t->current);
-		printf("a[%d].queue = %f", i, a[i].queue);
 		fputs(q, fps[i]);
 		
+		//popolazione media nel centro
 		sprintf(n, "%f\n", a[i].node/t->current);
-		printf("a[%d].node = %f", i, a[i].node);
 		fputs(n, fps[i]);
 		
+		//tempo di servizio medio
 		sprintf(serv, "%f\n", a[i].service/((al[i].index_a + al[i].index_f))*m[i]);
 		fputs(serv, fps[i]);	
 		
+		//tempo di attesa medio
 		sprintf(delay, "%f\n", a[i].queue/(al[i].index_a + al[i].index_f));
 		fputs(delay, fps[i]);
 		
+		//tempo di risposta medio
 		sprintf(wait, "%f\n", a[i].node/(al[i].index_a + al[i].index_f));
 		fputs(wait, fps[i]);
 		
+		//tempo di interarrivo medio
 		sprintf(interArr, "%f\n", t->last[i]/(al[i].index_a + al[i].index_f));
 		fputs(interArr, fps[i]);
 		
+		//numero di arrivi delle famiglie
 		sprintf(fam, "%f\n", (double)al[i].index_f);
 		fputs(fam, fps[i]);
 		
@@ -789,125 +765,56 @@ int main(int argc, char **argv){
 		free(wait);
 		free(interArr);
 		free(fam);
+
 	}
 
-	
-	//utilizzazione
-	/*
-	double rho_1 = a[0].service/t->current;
-	double rho_2 = a[1].service/t->current;
-	double rho_3 = a[2].service/t->current;
-	double rho_4 = a[3].service/t->current;
-	double rho_5 = a[4].service/t->current;
-	
-	//popolazione media nelle code
-	double q_1 = a[0].queue/t->current;
-	double q_2 = a[1].queue/t->current;
-	double q_3 = a[2].queue/t->current;
-	double q_4 = a[3].queue/t->current;
-	double q_5 = a[4].queue/t->current;
-	
-	//popolazione media nel centro
-	double n_1 = a[0].node/t->current;
-	double n_2 = a[1].node/t->current;
-	double n_3 = a[2].node/t->current;
-	double n_4 = a[3].node/t->current;
-	double n_5 = a[4].node/t->current;
-	
-	//tempo di servizio medio
-	double serv0 = a[0].service/(al[0].index_a + al[0].index_f);
-	double serv1 = a[1].service/(al[1].index_a + al[1].index_f);
-	double serv2 = a[2].service/(al[2].index_a + al[2].index_f);
-	double serv3 = a[3].service/(al[3].index_a + al[3].index_f);
-	double serv4 = a[4].service/(al[4].index_a + al[4].index_f);
-	
-	//tempo di attesa medio nella coda
-	double delay1 = a[0].queue/(al[0].index_a + al[0].index_f);
-	double delay2 = a[1].queue/(al[1].index_a + al[1].index_f);
-	double delay3 = a[2].queue/(al[2].index_a + al[2].index_f);
-	double delay4 = a[3].queue/(al[3].index_a + al[3].index_f);
-	double delay5 = a[4].queue/(al[4].index_a + al[4].index_f);
-	
-	//tempo di risposta medio
-	double wait1 = a[0].node/(al[0].index_a + al[0].index_f);
-	double wait2 = a[1].node/(al[1].index_a + al[1].index_f);
-	double wait3 = a[2].node/(al[2].index_a + al[2].index_f);
-	double wait4 = a[3].node/(al[3].index_a + al[3].index_f);
-	double wait5 = a[4].node/(al[4].index_a + al[4].index_f);
-	
-	//tempo di interarrivo
-	double interArr1 = t->last[0]/(al[0].index_a + al[0].index_f);
-	double interArr2 = t->last[1]/(al[1].index_a + al[1].index_f);
-	double interArr3 = t->last[2]/(al[2].index_a + al[2].index_f);
-	double interArr4 = t->last[3]/(al[3].index_a + al[3].index_f);
-	double interArr5 = t->last[4]/(al[4].index_a + al[4].index_f);
-	
-	
-	//numero arrivi famiglie
-	double fam1 = al[0].index_f;
-	double fam2 = al[1].index_f;
-	double fam3 = al[2].index_f;
-	double fam4 = al[3].index_f;
-	double fam5 = al[4].index_f;*/
-
-	
-		//percentuale di perdita per i centri 1, 2 e 5
-	
-	double lossProb1 = al[0].numLoss_f/al[0].index_f;
-	double lossProb2 = al[1].numLoss_f/al[1].index_f;
-	double lossProb3 = al[4].numLoss_f/al[4].index_f;
-	
-	//numero perdite
-	
-	double loss1 = al[0].numLoss_f;
-	double loss2 = al[1].numLoss_f;
-	double loss5 = al[4].numLoss_f;
-	printf("loss1: %f\n", loss1);
-	printf("loss2: %f\n", loss2);
-	printf("loss5: %f\n", loss5);
-	
-
-	char *lossProbStr;
-	char *lossStr;
-	
-	for(int i = 0; i<3; i++){
-		lossProbStr = (char *)malloc(30);
-		lossStr = (char *)malloc(30);
-		printf("b\n");
-		if(i==2)
-		{
-			sprintf(lossProbStr, "%f\n", (double)al[i+2].numLoss_f/(double)al[i+2].index_f);
-			fputs(lossProbStr, fps[i+2]);
-			sprintf(lossStr, "%f\n", (double)al[i+2].numLoss_f);
-			fputs(lossStr, fps[i+2]);			
-		}	
-		sprintf(lossProbStr, "%f\n", (double)al[i].numLoss_f/(double)al[i].index_f);
-		fputs(lossProbStr, fps[i]);
-		sprintf(lossStr, "%f\n", (double)al[i].numLoss_f);
-		fputs(lossStr, fps[i]);	
-	}
-	
-	//numero arrivi macchine
-	/*
-	double car1 = al[0].index_a;
-	double car2 = al[2].index_a;*/
 	char *carStr;
-	for(int i = 0; i<3;i = i + 2){
+	for(int i=0; i<3; i+=2){
 		carStr = (char *)malloc(30);
+
+		//numero di arrivi delle automobili
 		sprintf(carStr, "%f\n", (double)al[i].index_a);
 		fputs(carStr, fps[i]);
-		//printf("c\n");
+
+		free(carStr);
+
+	}
+
+	char *lossStr;	
+	char *lossProbStr;
+	for(int i=0; i<3; i++){
+		lossStr = (char *)malloc(30);
+		lossProbStr = (char *)malloc(30);
+
+		if(i<2) {
+			//numero di perdite per i centri 1, 2
+			sprintf(lossStr, "%f\n", (double)al[i].numLoss_f);
+			fputs(lossStr, fps[i]);
+			//percentuale di perdita per i centri 1, 2
+			sprintf(lossProbStr, "%f\n", (double)al[i].numLoss_f/(double)al[i].index_f);
+			fputs(lossProbStr, fps[i]);
+		}
+		else {
+			//numero di perdite per il centro 5
+			sprintf(lossStr, "%f\n", (double)al[i+2].numLoss_f);
+			fputs(lossStr, fps[i+2]);
+			//percentuale di perdita per il centro 5
+			sprintf(lossProbStr, "%f\n", (double)al[i+2].numLoss_f/(double)al[i+2].index_f);
+			fputs(lossProbStr, fps[i+2]);			
+		}
+
+		free(lossStr);
+		free(lossProbStr);
+
 	}
 	
 	for(int i = 0; i<5;i++){
-		//printf("d\n");
 		fclose(fps[i]);
-	}	
+	}
+
+	deallocateDataStructures();
 	
-	
-	
-	
-	printf("fine...\n");
+	printf("FINE\n");
 	fflush(stdout);
 
 	return 0;

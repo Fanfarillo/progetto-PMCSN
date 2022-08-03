@@ -1,22 +1,13 @@
-#include<stdio.h>
+#include "../headers/servicenode3.h"
+#include "../headers/randomGeneratorFunctions.h"
+
+#include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "../headers/servicenode3.h"/*
-#include "../headers/rngs.h"
-#include "../dataStructure/eventList.h"
-#include "../dataStructure/time.h"
-#include "../dataStructure/area.h"
-#include "../dataStructure/stateVariables.h"
-#include "../dataStructure/numArrLoss.h"
-#include "../dataStructure/arrivalTimes.h"
-#include "../dataStructure/utilStructs.h"*/
-#include "../headers/randomGeneratorFunctions.h"
-
-#define qT 0.34
 
 void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
-	//incremento il numero delle famiglie che arrivano al centro
+	//incremento il numero delle automobili che arrivano al centro
 	alPtr->index_a = alPtr->index_a + 1;
 	
 	
@@ -36,7 +27,6 @@ void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	free(toRemove);
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
@@ -45,7 +35,6 @@ void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}
 
 	bool existsCar = false;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
@@ -87,7 +76,6 @@ void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
@@ -96,7 +84,6 @@ void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	}
 	
 	bool existsCar = false;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
@@ -132,7 +119,6 @@ void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state
 void familyDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len){
 
 	bool existsCar = false;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
@@ -155,11 +141,10 @@ void familyDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct st
 		svPtr->x[serverOffset] = 0;
 	}
 	
-	//TODO: sistemare il generatore random in modo da utilizzare un solo generatore ma con il suo stream
-	if(getTableProb() <qT){
-			//Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al centro 4
+	if(getTableProb() < QT){
+		//Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al centro 4
 		struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
-		//viene dal centro delle casse automatiche
+		 
 		tailArrival->isFamily = true;
 		tailArrival->timeValue = tPtr->current;
 		tailArrival->next = NULL;

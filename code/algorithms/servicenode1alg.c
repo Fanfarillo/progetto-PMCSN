@@ -1,25 +1,16 @@
-#include<stdio.h>
-#include<math.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include "../headers/servicenode1.h"/*
-#include "../dataStructure/eventList.h"
-#include "../dataStructure/time.h"
-#include "../dataStructure/area.h"
-#include "../dataStructure/stateVariables.h"
-#include "../dataStructure/numArrLoss.h"
-#include "../dataStructure/arrivalTimes.h"
-#include "../dataStructure/utilStructs.h"*/
+#include "../headers/servicenode1.h"
 #include "../headers/randomGeneratorFunctions.h"
 
-//TODO: troppi stop e N
-#define STOP 1000000.0
-#define N 3
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len){
-	//incremento il numero delle famiglie che arrivano al centro
+
+	//incremento il numero delle automobili che arrivano al centro
 	alPtr->index_a = alPtr->index_a + 1;
-	//genero l'istante di tempo del prossimo arrivo della famiglia
+	//genero l'istante di tempo del prossimo arrivo di un'automobile
 	eventsPtr-> carArr1.carArrivalTime = getCarArrival(tPtr->current);
 
 
@@ -31,7 +22,6 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
@@ -40,7 +30,6 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}
 
 	bool existsCar = false;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
@@ -75,7 +64,6 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	}
 
 	int idleOffset = -1;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 0) {		//0 == IDLE
 			idleOffset = i;
@@ -84,14 +72,12 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	}
 	
 	bool existsCar = false;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
 			break;
 		}
 	}
-	printf("qf = %d\n",svPtr->qA);fflush(stdout);
 
 	if(idleOffset >= 0 && svPtr->qF == 0 && (existsCar || svPtr->qA == 0)) {
 		svPtr->x[idleOffset] = 1;
@@ -174,7 +160,6 @@ void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct st
 
 	
 	bool existsCar = false;
-	//for(int i=0; i<len(svPtr->x); i++) {
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR
 			existsCar = true;
@@ -213,7 +198,6 @@ void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct st
 
 	//Inserimento in coda di un nuovo nodo all'interno della lista degli arrivi al centro 3 (withdraw food)
 	struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
-	//viene dal centro delle casse automatiche
 	tailArrival->isFamily = true;
 	tailArrival->timeValue = tPtr->current;
 	tailArrival->next = NULL;
