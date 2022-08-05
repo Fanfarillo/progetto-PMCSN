@@ -54,7 +54,7 @@ void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 	}
 
 	if(getPlayProb() < QP){
-		
+		printf("Entrato...\n");fflush(stdout);
 		struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
 		tailArrival->isFamily = true;
 		tailArrival->timeValue = tPtr->current;

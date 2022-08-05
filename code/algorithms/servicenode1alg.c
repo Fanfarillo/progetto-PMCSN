@@ -8,7 +8,7 @@
 
 void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len){
 
-	//incremento il numero delle automobili che arrivano al centro
+	//incremento il numero delle automobili che arrivano al centro per calcolare le statistiche
 	alPtr->index_a = alPtr->index_a + 1;
 	//genero l'istante di tempo del prossimo arrivo di un'automobile
 	eventsPtr-> carArr1.carArrivalTime = getCarArrival(tPtr->current);

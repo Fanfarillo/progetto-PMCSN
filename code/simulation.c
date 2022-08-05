@@ -4,6 +4,7 @@
 #include "./headers/servicenode4.h"
 #include "./headers/servicenode5.h"
 #include "./headers/rngs.h"
+#include "./headers/rvms.h"
 #include "./headers/randomGeneratorFunctions.h"
 
 #include <stdio.h>
@@ -11,6 +12,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+
+#define LOC 0.99                       /* level of confidence,        */ 
+                                       /* use 0.95 for 95% confidence */
+#define SAMPLING 1
+                                       
 
 struct event_list *events;
 struct time *t;
@@ -83,14 +90,11 @@ void deallocateDataStructures() {
 void initializeEventList(int *m) {
 
 	events->carArr1.carArrivalTime = getCarArrival(START);
-	//printf("carArrival: %f\n", events->carArr1.carArrivalTime);
 	events->carArr1.isCarArrivalActive = true;
 	events->familyArr1.familyArrivalTime = getFamilyArrival1(START);
-	//printf("familyArrival: %f\n", events->familyArr1.familyArrivalTime);
 	events->familyArr1.isFamilyArrivalActive = true;
 
 	events->familyArr2.familyArrivalTime = getFamilyArrival2(START);
-	//printf("familyArrival2 (electr): %f\n", events->familyArr2.familyArrivalTime);
 	events->familyArr2.isFamilyArrivalActive = true;
 
 	events->carArr3.carArrivalTime = (double) INFINITY;
@@ -262,6 +266,10 @@ bool isSystemEmpty(int *m) {
 		if(sv2[2].x[i] != 0)
 			return false;
 	}
+	
+	//check sulle code
+	if(arr->head5 != NULL || arr->head4 != NULL || arr->head3 != NULL)
+		return false;
 
 	return true;
 
@@ -434,6 +442,57 @@ int countBusyServers(int numServers, int *serverList) {
 
 }
 
+void computeInterval(char *filename)
+{
+
+  	long   n    = 0;                     /* counts data points */
+  	double sum  = 0.0;
+  	double mean = 0.0;
+  	double data;
+  	double stdev;
+  	double u, t, w;
+  	double diff;
+
+	FILE *fp = fopen(filename, "r");
+	if(fp==NULL)
+		exit(-1);
+	
+	double variate;
+	int ret;
+	
+	while((ret = fscanf(fp, "%lf", &variate))!=EOF)
+	{
+		if(ret != 1)
+			exit(-3);
+		n++;                                 
+    		diff  = variate - mean;
+    		printf("diff = %lf\n", diff);fflush(stdout);
+    		sum  += diff * diff * (n - 1.0) / n;
+    		printf("sum = %lf\n", sum);fflush(stdout);
+    		mean += diff / n;
+    		printf("mean = %lf\n", mean);fflush(stdout);
+		//printf("%lf\n", variate);
+	}
+	
+  	stdev  = sqrt(sum / n);
+  	printf("stdev = %lf\n", stdev);fflush(stdout);
+
+  	if (n > 1) {
+    		u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */
+    		t = idfStudent(n - 1, u);                 /* critical value of t */
+    		printf("Valore critico: %lf\n", t);
+    		w = t * stdev / sqrt(n - 1);              /* interval half width */
+    		printf("\nbased upon %ld data points", n);
+    		printf(" and with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
+    		printf("the expected value is in the interval");
+    		printf("%10.2f +/- %6.2f\n", mean, w);
+  	}
+  	else{
+    		printf("ERROR - insufficient data\n");
+  		exit(-9000);
+	}
+}
+
 void verify(){
 
 	double rho_0 = a[0].service/t->current;
@@ -532,7 +591,7 @@ int main(int argc, char **argv){
 
 	if(argc < 7){
 		printf("ERRORE: i parametri passati in input al programma sono errati.\n");
-		printf("Formato richiesto: NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_1, FASCIA_ORARIA.\n");
+		printf("Formato richiesto: NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_2, NUM_SERVENTI_CENTRO_3, NUM_SERVENTI_CENTRO_4, NUM_SERVENTI_CENTRO_5, FASCIA_ORARIA.\n");
 		fflush(stdout);
 		exit(-1);
 	}
@@ -595,6 +654,15 @@ int main(int argc, char **argv){
 	PlantSeeds(7000);
 
 	initializeEventList(m);
+	
+	int arrivals[5];
+	
+	for(int i = 0; i < 5; i++){
+		arrivals[i] = 1;
+	}
+	
+	char *rho, *q, *n, *serv, *delay, *wait, *interArr, *fam;
+	FILE ** fps = createStatisticFiles();
 
 	while(events->carArr1.isCarArrivalActive || events->familyArr1.isFamilyArrivalActive || events->familyArr2.isFamilyArrivalActive || !isSystemEmpty(m)) {
 
@@ -651,10 +719,70 @@ int main(int argc, char **argv){
 		if(t->current == events->carArr1.carArrivalTime) {
 			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
 			carArrival1(events, t, &sv1[0], &al[0], m[0]);
+			if(arrivals[0]!= 0 && arrivals[0]%SAMPLING==0){
+				//sampling
+				printf("Eccome...\n");fflush(stdout);
+				arrivals[0] += 1;
+				rho = (char *)malloc(30);
+				q = (char *)malloc(30);
+				n = (char *)malloc(30);
+				serv = (char *)malloc(30);
+				delay = (char *)malloc(30);
+				wait = (char *)malloc(30);
+				interArr = (char *)malloc(30);
+				fam = (char *)malloc(30);		
+		
+				//utilizzazione
+				sprintf(rho, "%f;", a[0].service/(t->current * m[0]));
+				fputs(rho, fps[0]);		
+		
+				//popolazione media nelle code
+				sprintf(q, "%f;", a[0].queue/t->current);
+				fputs(q, fps[0]);
+		
+				//popolazione media nel centro
+				sprintf(n, "%f;", a[0].node/t->current);
+				fputs(n, fps[0]);
+			
+				//tempo di servizio medio
+				sprintf(serv, "%f;", a[0].service/((al[0].index_a + al[0].index_f))*m[0]);
+				fputs(serv, fps[0]);	
+		
+				//tempo di attesa medio
+				sprintf(delay, "%f;", a[0].queue/(al[0].index_a + al[0].index_f));
+				fputs(delay, fps[0]);
+		
+				//tempo di risposta medio
+				sprintf(wait, "%f;", a[0].node/(al[0].index_a + al[0].index_f));
+				fputs(wait, fps[0]);
+		
+				//tempo di interarrivo medio
+				sprintf(interArr, "%f;", t->last[0]/(al[0].index_a + al[0].index_f));
+				fputs(interArr, fps[0]);
+		
+				//numero di arrivi delle famiglie
+				sprintf(fam, "%f;", (double)al[0].index_f);
+				fputs(fam, fps[0]);
+				
+				fputs("\n", fps[0]);
+		
+				free(rho);
+				free(q);
+				free(n);
+				free(serv);
+				free(delay);
+				free(wait);
+				free(interArr);
+				free(fam);
+			}
 		}
 		else if(t->current == events->familyArr1.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
 			familyArrival1(events, t, &sv1[0], &al[0], m[0]);
+			if(arrivals[0]!= 0 && arrivals[0]%SAMPLING==0){
+				//sampling
+				arrivals[0] += 1;
+			}
 		}
 		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
 			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
@@ -671,6 +799,10 @@ int main(int argc, char **argv){
 		else if(t->current == events->familyArr2.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
 			arrival2(events, t, &sv2[0], &al[1], m[1]);
+			if(arrivals[0]!= 0 && arrivals[1]%SAMPLING==0){
+				//sampling
+				arrivals[1] += 1;
+			}
 		}
 		else if(t->current == nextCom2->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
@@ -683,10 +815,18 @@ int main(int argc, char **argv){
 		else if(t->current == events->carArr3.carArrivalTime) {
 			printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
 			carArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
+			if(arrivals[0]!= 0 && arrivals[2]%SAMPLING==0){
+				//sampling
+				arrivals[2] += 1;
+			}
 		}
 		else if(t->current == events->familyArr3.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
 			familyArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
+			if(arrivals[2]%SAMPLING==0){
+				//sampling
+				arrivals[2] += 1;
+			}
 		}
 		else if(t->current == nextCom3->completionTime && !nextCom3->isFamily) {
 			printf("EVENTO: partenza di un'automobile dal centro 3.\n");
@@ -699,6 +839,10 @@ int main(int argc, char **argv){
 		else if(t->current == events->familyArr4.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
 			arrival4(events, t, &sv2[1], &al[3], arr, m[3]);
+			if(arrivals[0]!= 0 && arrivals[3]%SAMPLING==0){
+				//sampling
+				arrivals[3] += 1;
+			}
 		}
 		else if(t->current == nextCom4->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 4.\n");
@@ -707,6 +851,10 @@ int main(int argc, char **argv){
 		else if(t->current == events->familyArr5.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
 			arrival5(events, t, &sv2[2], &al[4], arr, m[4]);
+			if(arrivals[0]!= 0 && arrivals[4]%SAMPLING==0){
+				//sampling
+				arrivals[4] += 1;
+			}
 		}
 		else if(t->current == nextCom5->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
@@ -759,8 +907,9 @@ int main(int argc, char **argv){
 	
 	verify();
 	
-	FILE ** fps = createStatisticFiles();	
-	char *rho, *q, *n, *serv, *delay, *wait, *interArr, *fam;
+	//FILE ** fps = createStatisticFiles();	
+	//char *rho, *q, *n, *serv, *delay, *wait, *interArr, *fam;
+	/*
 		
 	for(int i = 0; i < 5; i++){
 		rho = (char *)malloc(30);
@@ -854,14 +1003,14 @@ int main(int argc, char **argv){
 		free(lossProbStr);
 
 	}
-	
+	*/
 	for(int i = 0; i<5;i++){
 		fclose(fps[i]);
 	}
 
 	deallocateDataStructures();
 	
-	printf("FINE\n");
+	printf("Simulazione completata con successo...\n");
 	fflush(stdout);
 
 	return 0;
