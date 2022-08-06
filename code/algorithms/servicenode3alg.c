@@ -12,12 +12,12 @@ void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	
 	
 	struct arrival_time *toRemove = arrPtr->head3;
-
+	tPtr->last[2] = tPtr->current;
 	if(toRemove->next == NULL) {
 		arrPtr->head3 = NULL;
 		arrPtr->tail3 = NULL;
 		eventsPtr->carArr3.carArrivalTime = (double) INFINITY;	//Se la lista degli arrivi diventa vuota, vuol dire che per ora non ci sono nuovi arrivi per questo centro
-		tPtr->last[2] = tPtr->current;
+		
 	}
 	else {
 		arrPtr->head3 = toRemove->next;
@@ -60,12 +60,12 @@ void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	
 	
 	struct arrival_time *toRemove = arrPtr->head3;
-
+	tPtr->last[2] = tPtr->current;
 	if(toRemove->next == NULL) {
 		arrPtr->head3 = NULL;
 		arrPtr->tail3 = NULL;
 		eventsPtr->familyArr3.familyArrivalTime = (double) INFINITY;	//Se la lista degli arrivi diventa vuota, vuol dire che per ora non ci sono nuovi arrivi per questo centro
-		tPtr->last[2] = tPtr->current;
+		
 	}
 	else {
 		arrPtr->head3 = toRemove->next;

@@ -12,12 +12,12 @@ void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	svPtr->l = svPtr->l + 1;
 	
 	struct arrival_time *toRemove = arrPtr->head4;
-
+	tPtr->last[3] = tPtr->current;
 	if(toRemove->next == NULL) {
 		arrPtr->head4 = NULL;
 		arrPtr->tail4 = NULL;
 		eventsPtr->familyArr4.familyArrivalTime = (double) INFINITY;	//Se la lista degli arrivi diventa vuota, vuol dire che per ora non ci sono nuovi arrivi per questo centro
-		tPtr->last[3] = tPtr->current;
+		
 	}
 	else {
 		arrPtr->head4 = toRemove->next;
@@ -54,7 +54,6 @@ void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 	}
 
 	if(getPlayProb() < QP){
-		printf("Entrato...\n");fflush(stdout);
 		struct arrival_time *tailArrival = (struct arrival_time *) malloc(sizeof(struct arrival_time));
 		tailArrival->isFamily = true;
 		tailArrival->timeValue = tPtr->current;

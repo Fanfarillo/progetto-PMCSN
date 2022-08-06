@@ -37,6 +37,8 @@ struct event_list {
     double *completionTimes4;
     struct family_arrival familyArr5;
     double *completionTimes5;
+    double changeInterval;
+    double sampling;
 };
 
 #endif

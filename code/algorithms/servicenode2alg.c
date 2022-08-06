@@ -15,11 +15,12 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	//genero l'istante di tempo del prossimo arrivo della famiglia
 	eventsPtr->familyArr2.familyArrivalTime = getFamilyArrival2(tPtr->current);
 
+	//l'istante dell'arrivo che sto processando
+	tPtr->last[1] = tPtr->current;
 	if(eventsPtr->familyArr2.familyArrivalTime > STOP) {
 		eventsPtr->familyArr2.familyArrivalTime = (double) INFINITY;
 		eventsPtr->familyArr2.isFamilyArrivalActive = false;
-		//l'istante dell'arrivo che sto processando
-		tPtr->last[1] = tPtr->current;
+		
 	}
 
 	int idleOffset = -1;

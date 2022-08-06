@@ -6,6 +6,31 @@ import numpy as np
 #Se si cambia il file histogram.c potrebbe non funzionare correttamente
 #----------------------------------------------------------------------------------
 
+def plotWaitingTime():
+	f = open("../data/finite/servicenodesampling1.dat", "r")
+	rhos = []
+	count = 0
+	for line in f:
+		if line!= "\n":
+			#print(line)			
+			rigaSplittata = line.split(";")
+			#print(rigaSplittata)
+			for rho in rigaSplittata:
+				rhos.append(rho)
+				print(rho)
+				count = count + 1
+		print(count)
+		
+		#waitingTimes.append(values[4])
+		#print(rhos)
+	#print(len(waitingTimes))
+	#s = 0.0
+	#count = 0
+	#for item in waitingTimes:
+	#	count = count + 1
+	#	s = s + float(item)
+	#print(float(s/count))
+
 def sampleMeanDistribution():
 
 	variates = []
@@ -91,6 +116,10 @@ def standardizedSampleMeanDistribution():
 	plt.hist(nparray, density=True)
 	plt.show()
 	
-sampleMeanDistribution()
-standardizedSampleMeanDistribution()
+
+	
+	
+#sampleMeanDistribution()
+#standardizedSampleMeanDistribution()
+plotWaitingTime()
 

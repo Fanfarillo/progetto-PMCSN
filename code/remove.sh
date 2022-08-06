@@ -1,4 +1,5 @@
 rm simulation
+rm sim.o
 rm simulation.o
 rm servicenode1alg.o
 rm servicenode2alg.o
@@ -8,9 +9,13 @@ rm servicenode5alg.o
 rm rngs.o
 rm rvms.o
 rm randomGeneratorFunctions.o
-rm servicenode1.dat
-rm servicenode2.dat
-rm servicenode3.dat
-rm servicenode4.dat
-rm servicenode5.dat
-
+rm ./data/finite/servicenode1.dat
+rm ./data/finite/servicenode2.dat
+rm ./data/finite/servicenode3.dat
+rm ./data/finite/servicenode4.dat
+rm ./data/finite/servicenode5.dat
+rm ./data/infinite/servicenode1.dat
+rm ./data/infinite/servicenode2.dat
+rm ./data/infinite/servicenode3.dat
+rm ./data/infinite/servicenode4.dat
+rm ./data/infinite/servicenode5.dat

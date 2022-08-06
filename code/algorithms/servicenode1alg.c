@@ -13,12 +13,11 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	//genero l'istante di tempo del prossimo arrivo di un'automobile
 	eventsPtr-> carArr1.carArrivalTime = getCarArrival(tPtr->current);
 
-
+	//l'istante dell'arrivo che sto processando
+	tPtr->last[0] = tPtr->current;
 	if(eventsPtr-> carArr1.carArrivalTime > STOP) {
 		eventsPtr-> carArr1.carArrivalTime = (double) INFINITY;
 		eventsPtr-> carArr1.isCarArrivalActive = false;
-		//l'istante dell'arrivo che sto processando
-		tPtr->last[0] = tPtr->current;
 	}
 
 	int idleOffset = -1;
@@ -56,11 +55,11 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	//genero l'istante di tempo del prossimo arrivo della famiglia
 	eventsPtr->familyArr1.familyArrivalTime = getFamilyArrival1(tPtr->current);
 
+	//l'istante dell'arrivo che sto processando
+	tPtr->last[0] = tPtr->current;
 	if(eventsPtr->familyArr1.familyArrivalTime > STOP) {
 		eventsPtr->familyArr1.familyArrivalTime = (double) INFINITY;
 		eventsPtr->familyArr1.isFamilyArrivalActive = false;
-		//l'istante dell'arrivo che sto processando
-		tPtr->last[0] = tPtr->current;
 	}
 
 	int idleOffset = -1;

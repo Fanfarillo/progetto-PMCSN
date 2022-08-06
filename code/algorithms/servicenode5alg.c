@@ -12,12 +12,12 @@ void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 
 	//Rimozione del nodo testa dalla lista degli arrivi al centro 5 (playground)
 	struct arrival_time *toRemove = arrPtr->head5;
-
+	tPtr->last[4] = tPtr->current;
 	if(toRemove->next == NULL) {
 		arrPtr->head5 = NULL;
 		arrPtr->tail5 = NULL;
 		eventsPtr->familyArr5.familyArrivalTime = (double) INFINITY;	//Se la lista degli arrivi diventa vuota, vuol dire che per ora non ci sono nuovi arrivi per questo centro
-		tPtr->last[4] = tPtr->current;
+		
 	}
 	else {
 		arrPtr->head5 = toRemove->next;

@@ -1,5 +1,5 @@
 #define START 0.0
-#define STOP 100.0
+#define STOP 50400.0
 #define N 3
 
 #define P_CAR 0.6
