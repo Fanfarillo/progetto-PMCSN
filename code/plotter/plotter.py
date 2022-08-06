@@ -9,27 +9,42 @@ import numpy as np
 def plotWaitingTime():
 	f = open("../data/finite/servicenodesampling1.dat", "r")
 	rhos = []
+	sampleMeansRho = []
+	
 	count = 0
+	s = 0.0
+	item = 0
 	for line in f:
 		if line!= "\n":
-			#print(line)			
-			rigaSplittata = line.split(";")
-			#print(rigaSplittata)
-			for rho in rigaSplittata:
-				rhos.append(rho)
-				print(rho)
-				count = count + 1
-		print(count)
+			if(count%11==0):
+				#print(line)			
+				rigaSplittata = line.split(";")
+				#print(rigaSplittata)
+				listItem = []
+				for rho in rigaSplittata:
+					if rho!="\n":
+						item = item + 1
+						listItem.append(rho)
+						#rhos.append(rho)
+						print(rho)
+				#print("item = ", item)
+				item=0
+				for rho in listItem:
+					s = s + float(rho)
+					item = item + 1
+				print("item = ", item)
+				#sampleMeansRho.append(float(s/item))
+				rhos.append(listItem)
+			count = count + 1
 		
-		#waitingTimes.append(values[4])
-		#print(rhos)
-	#print(len(waitingTimes))
-	#s = 0.0
-	#count = 0
-	#for item in waitingTimes:
-	#	count = count + 1
-	#	s = s + float(item)
-	#print(float(s/count))
+	print("Lunghezza item = ", len(rhos))
+	print("Type item = ", type(rhos[0]))
+	for i in rhos:
+		for j in i:
+			print(j)
+			break
+	#print("Lunghezza item campione = ", len(sampleMeansRho))
+	
 
 def sampleMeanDistribution():
 

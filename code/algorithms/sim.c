@@ -519,28 +519,51 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 {
 		for(int center=0;center<CENTERS;center++)
 	{
+		if((t->current * m[center])==0)
+			samplingTime[replica][center][0][count]=0;
+		else
+			samplingTime[replica][center][0][count]=aSampling[center].service/(t->current * m[center]);
 		
-		samplingTime[replica][center][0][count]=aSampling[center].service/(t->current * m[center]);
+		if(t->current==0)
+			samplingTime[replica][center][1][count]=0;
+		else
+			samplingTime[replica][center][1][count]=aSampling[center].queue/t->current;
 		
-		samplingTime[replica][center][1][count]=aSampling[center].queue/t->current;
+		if(t->current==0)
+			samplingTime[replica][center][2][count]=0;
+		else	
+			samplingTime[replica][center][2][count]=aSampling[center].node/t->current;
 		
-		samplingTime[replica][center][2][count]=aSampling[center].node/t->current;
+		if((al[center].index_a + al[center].index_f)==0)
+			samplingTime[replica][center][3][count]=0;
+		else
+			samplingTime[replica][center][3][count]=aSampling[center].service/(al[center].index_a + al[center].index_f);
 		
-		samplingTime[replica][center][3][count]=aSampling[center].service/(al[center].index_a + al[center].index_f);
+		if((al[center].index_a + al[center].index_f)==0)
+			samplingTime[replica][center][4][count]=0;
+		else
+			samplingTime[replica][center][4][count]=aSampling[center].queue/(al[center].index_a + al[center].index_f);
 		
-		samplingTime[replica][center][4][count]=aSampling[center].queue/(al[center].index_a + al[center].index_f);
+		if((al[center].index_a + al[center].index_f)==0)
+			samplingTime[replica][center][5][count]=0;
+		else
+			samplingTime[replica][center][5][count]=aSampling[center].node/(al[center].index_a + al[center].index_f);
 		
-		samplingTime[replica][center][5][count]=aSampling[center].node/(al[center].index_a + al[center].index_f);
-		
-		samplingTime[replica][center][6][count]=t->last[center]/(al[center].index_a + al[center].index_f);
+		if((al[center].index_a + al[center].index_f)==0)
+			samplingTime[replica][center][6][count]=0;
+		else
+			samplingTime[replica][center][6][count]=t->last[center]/(al[center].index_a + al[center].index_f);
 		
 		samplingTime[replica][center][7][count]=(double)(al[center].index_f);
-		
+				
 		samplingTime[replica][center][8][count]=(double)(al[center].index_a);
 		
 		samplingTime[replica][center][9][count]=(double)(al[center].numLoss_f);
 		
-		samplingTime[replica][center][10][count]=(double)(al[center].numLoss_f)/(double)(al[center].index_f);		
+		if((al[center].index_f)==0)
+			samplingTime[replica][center][10][count]=0;
+		else
+			samplingTime[replica][center][10][count]=(double)(al[center].numLoss_f)/(double)(al[center].index_f);		
 		
 	}
 }

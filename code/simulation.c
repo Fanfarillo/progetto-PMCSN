@@ -283,7 +283,7 @@ int main(int argc, char **argv){
 	FILE ** fps = createStatisticFiles();	
 	
 	double *****ret = finite_sim(m);
-	
+	/*
 	for(int replica=0;replica<REPLICATIONS;replica++)
 	{
 		printf("-------------------------------------- REPLICA %d -----------------------------\n", replica);
@@ -300,7 +300,7 @@ int main(int argc, char **argv){
 				}
 			}
 		}
-	}
+	}*/
 	
 	char *stat_value;
 	FILE *fp = NULL;
@@ -341,6 +341,8 @@ int main(int argc, char **argv){
 					stat_value=(char *)malloc(30);
 					if(stat_value==NULL)
 						errorMalloc2(-8000);
+					if(replica==2)
+						printf("stat %d count %d: %f\n", stat, count, ret[1][replica][center][stat][count]);
 					sprintf(stat_value, "%f;", ret[1][replica][center][stat][count]);
 					fputs(stat_value, fps[center+10]);
 					free(stat_value);
