@@ -109,7 +109,11 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 
 void carDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, struct arrival_loss *alPtr){
 	alPtr -> compl_a += 1;
-	if(svPtr->qA != 0) {
+
+	if(svPtr->x[serverOffset] == -1) {
+		eventsPtr->completionTimes1[serverOffset] = (double) INFINITY;
+	}
+	else if(svPtr->qA != 0) {
 		svPtr->qA--;
 		eventsPtr->completionTimes1[serverOffset] = getService1(tPtr->current);
 	}
@@ -167,7 +171,10 @@ void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct st
 		}
 	}
 
-	if(!existsCar && svPtr->qA!=0) {
+	if(svPtr->x[serverOffset] == -1) {
+		eventsPtr->completionTimes1[serverOffset] = (double) INFINITY;
+	}
+	else if(!existsCar && svPtr->qA!=0) {
 		//almeno un job in coda e genero il suo tempo di completamento
 		eventsPtr->completionTimes1[serverOffset] = getService1(tPtr->current);
 		svPtr->qA--;
@@ -246,3 +253,51 @@ void abandon1(struct event_list *eventsPtr, struct state_variables1 *svPtr, stru
 	svPtr->qF = svPtr->qF - 1;	
 }
 
+void fixState1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, int firstServerOffset, int variation) {
+
+	bool existsCar = false;
+	for(int i=0; i<firstServerOffset; i++) {
+		if(svPtr->x[i] == 2) {		//2 == CAR
+			existsCar = true;
+			break;
+		}
+	}
+
+	if(!existsCar && svPtr->qA > 0) {
+		eventsPtr->completionTimes1[firstServerOffset] = getService1(tPtr->current);
+		svPtr->qA -= 1;
+		svPtr->x[firstServerOffset] = 2;
+		firstServerOffset++;
+		variation--;
+	}
+	if(variation > 0 && svPtr->qF > 0) {
+		int numInService;
+		if(variation < svPtr->qF)
+			numInService = variation;
+		else
+			numInService = svPtr->qF;
+
+		for(int i=0; i<numInService; i++) {
+			svPtr->qF--;
+			eventsPtr->completionTimes1[firstServerOffset+i] = getService1(tPtr->current);
+			svPtr->x[firstServerOffset+i] = 1;
+			if(eventsPtr->head1 != NULL) {
+				//Rimozione del nodo testa dalla lista degli abbandoni
+
+				struct job *toRemove = eventsPtr->head1;
+				if(toRemove->next == NULL) {
+					eventsPtr->head1 = NULL;
+					eventsPtr->tail1 = NULL;
+				}
+				else {
+					eventsPtr->head1 = toRemove->next;
+					eventsPtr->head1->prev = NULL;
+				}
+				free(toRemove);
+			}
+
+		}
+
+	}
+
+}

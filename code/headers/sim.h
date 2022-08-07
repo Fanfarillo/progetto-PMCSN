@@ -5,5 +5,5 @@
 #define SAMPLINGINTERVAL 300
 
 
-double***** finite_sim(int *m);
+double***** finite_sim(int **array_m);
 void infinite(void);

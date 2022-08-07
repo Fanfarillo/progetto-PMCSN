@@ -18,13 +18,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
-
 #define LOC 0.99                       /* level of confidence,        */ 
                                        /* use 0.95 for 95% confidence */
-#define SAMPLING 1
-                                    
-
+#define SAMPLING 1                         
 
 void errorMalloc2(int code) {
 
@@ -231,7 +227,30 @@ int main(int argc, char **argv){
 		exit(-1);
 	}
 
-	int* m = NULL;
+	FILE *fp_config = fopen("properties.conf", "r");
+	if(fp_config==NULL)
+		errorMalloc2(-2000);
+
+	int **array_m = (int **)malloc(sizeof(int *)*6);
+	if(array_m==NULL)
+		errorMalloc2(-2001);
+	for(int i=0; i<6; i++) {
+		array_m[i] = (int *)malloc(sizeof(int)*CENTERS);
+		if(array_m[i]==NULL)
+			errorMalloc2(-2002);
+	}
+
+	int check;
+	for(int i=0; i<6; i++) {
+		check = fscanf(fp_config, "%d %d %d %d %d\n", &array_m[i][0], &array_m[i][1], &array_m[i][2], &array_m[i][3], &array_m[i][4]);
+		if(check!=5) {
+			printf("ERRORE: c'è stato un problema nella lettura del file properties.conf.\n");
+			fflush(stdout);
+			exit(-6);
+		}
+	}
+
+/*	int* m = NULL;
 	m = (int *)malloc(sizeof(int)*(5));
 
 	if(m==NULL){
@@ -250,7 +269,7 @@ int main(int argc, char **argv){
 			fflush(stdout);
 			exit(-2);
 		}
-	}
+	}*/
 
 	int interval = atoi(argv[6]);
 
@@ -279,10 +298,9 @@ int main(int argc, char **argv){
 			exit(-3);
 	}
 	
-	
 	FILE ** fps = createStatisticFiles();	
 	
-	double *****ret = finite_sim(m);
+	double *****ret = finite_sim(array_m);
 	/*
 	for(int replica=0;replica<REPLICATIONS;replica++)
 	{
@@ -355,8 +373,6 @@ int main(int argc, char **argv){
 			
 		}
 	}
-	
-	
 	
 	for(int i = 0; i<15;i++){
 		fclose(fps[i]);

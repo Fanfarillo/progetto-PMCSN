@@ -77,8 +77,10 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 		free(toRemove);
 	}
 	
-
-	if(svPtr->l >= n) {
+	if(svPtr->x[serverOffset] == -1) {
+		eventsPtr->completionTimes2[serverOffset] = (double) INFINITY;
+	}
+	else if(svPtr->l >= n) {
 		//almeno un job in coda e genero il suo tempo di completamento
 		eventsPtr->completionTimes2[serverOffset] = getService2(tPtr->current);
 	}
@@ -137,5 +139,39 @@ void abandon2(struct event_list *eventsPtr, struct state_variables2 *svPtr, stru
 
 	alPtr->numLoss_f = alPtr->numLoss_f + 1;
 	svPtr->l = svPtr->l - 1;
+
+}
+
+void fixState2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, int firstServerOffset, int variation) {
+
+	if(svPtr->l - firstServerOffset > 0) {
+		int numInService;
+		if(variation < svPtr->l - firstServerOffset)
+			numInService = variation;
+		else
+			numInService = svPtr->l - firstServerOffset;
+
+		for(int i=0; i<numInService; i++) {
+			eventsPtr->completionTimes2[firstServerOffset+i] = getService2(tPtr->current);
+			svPtr->x[firstServerOffset+i] = 1;
+			if(eventsPtr->head2 != NULL) {
+				//Rimozione del nodo testa dalla lista degli abbandoni
+
+				struct job *toRemove = eventsPtr->head2;
+				if(toRemove->next == NULL) {
+					eventsPtr->head2 = NULL;
+					eventsPtr->tail2 = NULL;
+				}
+				else {
+					eventsPtr->head2 = toRemove->next;
+					eventsPtr->head2->prev = NULL;
+				}
+				free(toRemove);
+
+			}
+
+		}
+
+	}
 
 }

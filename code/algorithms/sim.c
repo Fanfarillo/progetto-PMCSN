@@ -14,9 +14,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
-
-
 struct event_list *events;
 struct time *t;
 struct area *a, *aSampling;
@@ -24,9 +21,6 @@ struct state_variables1 *sv1;		//centers num 1, 3
 struct state_variables2 *sv2;		//centers num 2, 4, 5
 struct arrival_loss *al;
 struct arrivals *arr;
-
-
-
 
 void errorMalloc(int code) {
 
@@ -94,6 +88,7 @@ void deallocateDataStructures() {
 }
 
 void initializeEventList(int *m) {
+	//m is maxArray
 
 	events->carArr1.carArrivalTime = getCarArrival(START);
 	events->carArr1.isCarArrivalActive = true;
@@ -180,53 +175,68 @@ void initializeArea() {
 
 }
 
-void initializeStateVariables(int *m) {
+void initializeStateVariables(int *maxArray, int *m) {
 
 	sv1[0].qA = 0;
 	sv1[0].qF = 0;
-	sv1[0].x = (int *) malloc(sizeof(int)*m[0]);
+	sv1[0].x = (int *) malloc(sizeof(int)*maxArray[0]);
 	if(sv1[0].x==NULL)
 		errorMalloc(-1013);
 	
 	for(int i=0; i<m[0]; i++) {
 		sv1[0].x[i] = 0;	//0=IDLE, 1=BUSY_F, 2=BUSY_A
 	}
+	for(int i=m[0]; i<maxArray[0]; i++) {
+		sv1[0].x[i] = -1;	//-1 = NOT ACTIVATED
+	}
 
 	sv2[0].l = 0;
-	sv2[0].x = (int *) malloc(sizeof(int)*m[1]);
+	sv2[0].x = (int *) malloc(sizeof(int)*maxArray[1]);
 	if(sv2[0].x==NULL)
 		errorMalloc(-1014);
 
 	for(int i=0; i<m[1]; i++) {
 		sv2[0].x[i] = 0;	//0=IDLE, 1=BUSY
 	}
+	for(int i=m[1]; i<maxArray[1]; i++) {
+		sv2[0].x[i] = -1;	//-1 = NOT ACTIVATED
+	}
 
 	sv1[1].qA = 0;
 	sv1[1].qF = 0;
-	sv1[1].x = (int *) malloc(sizeof(int)*m[2]);
+	sv1[1].x = (int *) malloc(sizeof(int)*maxArray[2]);
 	if(sv1[1].x==NULL)
 		errorMalloc(-1015);
 
 	for(int i=0; i<m[2]; i++) {
 		sv1[1].x[i] = 0;	//0=IDLE, 1=BUSY_F, 2=BUSY_A
 	}
+	for(int i=m[2]; i<maxArray[2]; i++) {
+		sv1[1].x[i] = -1;	//-1 = NOT ACTIVATED
+	}
 
 	sv2[1].l = 0;
-	sv2[1].x = (int *) malloc(sizeof(int)*m[3]);
+	sv2[1].x = (int *) malloc(sizeof(int)*maxArray[3]);
 	if(sv2[1].x==NULL)
 		errorMalloc(-1016);
 
 	for(int i=0; i<m[3]; i++) {
 		sv2[1].x[i] = 0;	//0=IDLE, 1=BUSY
 	}
+	for(int i=m[3]; i<maxArray[3]; i++) {
+		sv2[1].x[i] = -1;	//-1 = NOT ACTIVATED
+	}
 
 	sv2[2].l = 0;  			//unuseful
-	sv2[2].x = (int *) malloc(sizeof(int)*m[4]);
+	sv2[2].x = (int *) malloc(sizeof(int)*maxArray[4]);
 	if(sv2[2].x==NULL)
 		errorMalloc(-1017);
 
 	for(int i=0; i<m[4]; i++) {
 		sv2[2].x[i] = 0;	//0=IDLE, 1=BUSY
+	}
+	for(int i=m[4]; i<maxArray[4]; i++) {
+		sv2[2].x[i] = -1;	//-1 = NOT ACTIVATED
 	}
 
 }
@@ -261,16 +271,45 @@ void initializeArrivals() {
 
 }
 
+int *getMaxArray(int **array_m) {
 
-void initialize(int *m)
+	int *maxArray = (int *)malloc(sizeof(int)*CENTERS);
+	if(maxArray==NULL)
+		errorMalloc(-2003);
+
+	for(int j=0; j<CENTERS; j++) {
+		maxArray[j] = array_m[0][j];
+	}
+
+	for(int i=0; i<6; i++) {
+		for(int j=0; j<CENTERS; j++) {
+			if(maxArray[j] < array_m[i][j])
+				maxArray[j] = array_m[i][j];
+		}
+
+	}
+
+	for(int j=0; j<CENTERS; j++) {
+		printf("%d ", maxArray[j]);
+	}
+	printf("\n");
+	fflush(stdout);
+
+	return maxArray;
+
+}
+
+
+void initialize(int **array_m)
 {
+	int *maxArray = getMaxArray(array_m);
 	allocateDataStructures();
 	initializeTime();	
 	initializeArea();
-	initializeStateVariables(m);
+	initializeStateVariables(maxArray, array_m[0]);
 	initializeArrivalLoss();
 	initializeArrivals();	
-	initializeEventList(m);	
+	initializeEventList(maxArray);	
 }
 
 
@@ -572,13 +611,58 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 	}
 }
 
-void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
+void applyServersVariation(int *old_m, int *new_m, struct event_list *events, struct time *t, struct state_variables1 *sv1, struct state_variables2 *sv2) {
+
+	//CENTER 1
+	if(new_m[0]-old_m[0] > 0) {
+		for(int i=old_m[0]; i<new_m[0]; i++) {
+			sv1[0].x[i] = 0;
+		}
+		fixState1(events, t, &sv1[0], old_m[0], new_m[0]-old_m[0]);
+	}
+	else if(new_m[0]-old_m[0] < 0) {
+		for(int i=new_m[0]; i<old_m[0]; i++) {
+			sv1[0].x[i] = -1;
+		}
+	}
+
+	//CENTER 2
+	if(new_m[1]-old_m[1] > 0) {
+		for(int i=old_m[1]; i<new_m[1]; i++) {
+			sv2[0].x[i] = 0;
+		}
+		fixState2(events, t, &sv2[0], old_m[1], new_m[1]-old_m[1]);
+	}
+	else if(new_m[1]-old_m[1] < 0) {
+		for(int i=new_m[1]; i<old_m[1]; i++) {
+			sv2[0].x[i] = -1;
+		}
+	}
+
+	//CENTER 3
+	if(new_m[2]-old_m[2] > 0) {
+		for(int i=old_m[2]; i<new_m[2]; i++) {
+			sv1[1].x[i] = 0;
+		}
+		fixState3(events, t, &sv1[1], old_m[2], new_m[2]-old_m[2]);
+	}
+	else if(new_m[2]-old_m[2] < 0) {
+		for(int i=new_m[2]; i<old_m[2]; i++) {
+			sv1[1].x[i] = -1;
+		}
+	}	
+
+
+}
+
+void simulation(int **array_m, int replica, double**** nsim, double ****samplingTime)
 
 {
 
 	int rate;
 	int interval = 0;
 	int count=0;
+	int *m = array_m[0];
 
 	while(events->carArr1.isCarArrivalActive || events->familyArr1.isFamilyArrivalActive || events->familyArr2.isFamilyArrivalActive || !isSystemEmpty(m)) {
 
@@ -670,22 +754,32 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 			else if(events->changeInterval==7200.0)	{			
 				rate = 480.0;
 				events->changeInterval = 10800.0;
+				m = array_m[1];
+				applyServersVariation(array_m[0], m, events, t, sv1, sv2);
 			}
 			else if(events->changeInterval==10800.0)	{
 				rate = 60.0;
 				events->changeInterval = 21600.0;
+				m = array_m[2];
+				applyServersVariation(array_m[1], m, events, t, sv1, sv2);
 			}
 			else if(events->changeInterval==21600.0)	{
 				rate = 300.0;
 				events->changeInterval = 32400.0;
+				m = array_m[3];
+				applyServersVariation(array_m[2], m, events, t, sv1, sv2);
 			}
 			else if(events->changeInterval==32400.0)	{
 				rate = 30.0;
 				events->changeInterval = 46800.0;
+				m = array_m[4];
+				applyServersVariation(array_m[3], m, events, t, sv1, sv2);
 			}
 			else if(events->changeInterval==46800.0)	{
 				rate = 180.0;
 				events->changeInterval = (double) INFINITY;
+				m = array_m[5];
+				applyServersVariation(array_m[4], m, events, t, sv1, sv2);
 			}
 		}
 		else if(t->current == events-> sampling){
@@ -814,7 +908,7 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 }
 
 
-double***** finite_sim(int *m)
+double***** finite_sim(int **array_m)
 {
 
 	PlantSeeds(7000);
@@ -870,8 +964,8 @@ double***** finite_sim(int *m)
 	//finite-horizon simulation
 	for(int i=0; i<REPLICATIONS; i++)
 	{
-		initialize(m);
-		simulation(m, i, nsim, samplingTime);
+		initialize(array_m);
+		simulation(array_m, i, nsim, samplingTime);
 		//clear();
 	}
 	
