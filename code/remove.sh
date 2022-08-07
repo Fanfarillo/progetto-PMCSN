@@ -14,8 +14,16 @@ rm ./data/finite/servicenode2.dat
 rm ./data/finite/servicenode3.dat
 rm ./data/finite/servicenode4.dat
 rm ./data/finite/servicenode5.dat
+rm ./data/finite/servicenodesampling1.dat
+rm ./data/finite/servicenodesampling2.dat
+rm ./data/finite/servicenodesampling3.dat
+rm ./data/finite/servicenodesampling4.dat
+rm ./data/finite/servicenodesampling5.dat
 rm ./data/infinite/servicenode1.dat
 rm ./data/infinite/servicenode2.dat
 rm ./data/infinite/servicenode3.dat
 rm ./data/infinite/servicenode4.dat
 rm ./data/infinite/servicenode5.dat
+rmdir ./data/finite
+rmdir ./data/infinite
+rmdir ./data

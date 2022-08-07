@@ -57,9 +57,10 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 
 }
 
-void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n){
+void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n, struct arrival_loss *alPtr){
 
 	svPtr->l = svPtr->l - 1;
+	alPtr -> compl_f += 1;
 
 	if(eventsPtr->head2 != NULL) {
 		//Rimozione del nodo testa dalla lista degli abbandoni

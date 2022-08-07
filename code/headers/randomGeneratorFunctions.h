@@ -1,6 +1,6 @@
 #define START 0.0
 #define STOP 50400.0
-#define N 3
+#define N 1
 
 #define P_CAR 0.6
 #define QE 0.4

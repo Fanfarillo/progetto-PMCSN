@@ -44,8 +44,8 @@ void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 
 }
 
-void departure5(struct event_list *eventsPtr, struct state_variables2 *svPtr, int serverOffset){
-	
+void departure5(struct event_list *eventsPtr, struct state_variables2 *svPtr, int serverOffset, struct arrival_loss *alPtr){
+	alPtr -> compl_f += 1;
 	eventsPtr->completionTimes5[serverOffset] = (double) INFINITY;
 	svPtr->x[serverOffset] = 0;
 

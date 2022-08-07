@@ -39,9 +39,9 @@ void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		eventsPtr->completionTimes4[idleOffset] = getService4(tPtr->current);
 	}
 }
-void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n){
+void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n, struct arrival_loss *alPtr){
 	svPtr->l = svPtr->l - 1;
-	
+	alPtr -> compl_f += 1;
 	
 
 	if(svPtr->l >= n) {

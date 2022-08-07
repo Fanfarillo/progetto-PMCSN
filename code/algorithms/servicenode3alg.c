@@ -99,7 +99,8 @@ void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct stat
 		svPtr->qF++;
 	}
 }
-void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset){
+void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, struct arrival_loss *alPtr){
+	alPtr -> compl_a += 1;
 	if(svPtr->qA != 0) {
 		svPtr->qA--;
 		eventsPtr->completionTimes3[serverOffset] = getService3(tPtr->current);
@@ -116,8 +117,8 @@ void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state
 }
 
 
-void familyDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len){
-
+void familyDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len, struct arrival_loss *alPtr){
+	alPtr -> compl_f += 1;
 	bool existsCar = false;
 	for(int i=0; i<len; i++) {
 		if(svPtr->x[i] == 2) {		//2 == CAR

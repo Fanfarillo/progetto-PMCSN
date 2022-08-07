@@ -240,6 +240,10 @@ void initializeArrivalLoss() {
 		al[i].prev_index_a = 0;
 		al[i].prev_index_f = 0;
 		al[i].prev_numLoss_f = 0;
+		al[i].compl_a = 0;
+		al[i].compl_f = 0;
+		al[i].prev_compl_a = 0;
+		al[i].prev_compl_f = 0;
 	}
 
 }
@@ -504,10 +508,10 @@ void sampling(int interval, int replica, double ****nsim, int *m)
 		nsim[replica][center][interval-1][0]=a[center].service/((t->current-diff) * m[center]);
 		nsim[replica][center][interval-1][1]=a[center].queue/(t->current-diff);
 		nsim[replica][center][interval-1][2]=a[center].node/(t->current-diff);
-		nsim[replica][center][interval-1][3]=a[center].service/(((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f)));
-		nsim[replica][center][interval-1][4]=a[center].queue/((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f));
-		nsim[replica][center][interval-1][5]=a[center].node/((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f));
-		nsim[replica][center][interval-1][6]=(t->last[center]-diff)/((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f));
+		nsim[replica][center][interval-1][3]=a[center].service/(((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f)));
+		nsim[replica][center][interval-1][4]=a[center].queue/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));
+		nsim[replica][center][interval-1][5]=a[center].node/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));
+		nsim[replica][center][interval-1][6]=(t->last[center]-diff)/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));
 		nsim[replica][center][interval-1][7]=(double)(al[center].index_f-al[center].prev_index_f);
 		nsim[replica][center][interval-1][8]=(double)(al[center].index_a-al[center].prev_index_a);
 		nsim[replica][center][interval-1][9]=(double)(al[center].numLoss_f - al[center].prev_numLoss_f);
@@ -534,25 +538,25 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 		else	
 			samplingTime[replica][center][2][count]=aSampling[center].node/t->current;
 		
-		if((al[center].index_a + al[center].index_f)==0)
+		if((al[center].compl_a + al[center].compl_f)==0)
 			samplingTime[replica][center][3][count]=0;
 		else
-			samplingTime[replica][center][3][count]=aSampling[center].service/(al[center].index_a + al[center].index_f);
+			samplingTime[replica][center][3][count]=aSampling[center].service/(al[center].compl_a + al[center].compl_f);
 		
-		if((al[center].index_a + al[center].index_f)==0)
+		if((al[center].compl_a + al[center].compl_f)==0)
 			samplingTime[replica][center][4][count]=0;
 		else
-			samplingTime[replica][center][4][count]=aSampling[center].queue/(al[center].index_a + al[center].index_f);
+			samplingTime[replica][center][4][count]=aSampling[center].queue/(al[center].compl_a + al[center].compl_f);
 		
-		if((al[center].index_a + al[center].index_f)==0)
+		if((al[center].compl_a + al[center].compl_f)==0)
 			samplingTime[replica][center][5][count]=0;
 		else
-			samplingTime[replica][center][5][count]=aSampling[center].node/(al[center].index_a + al[center].index_f);
+			samplingTime[replica][center][5][count]=aSampling[center].node/(al[center].compl_a + al[center].compl_f);
 		
-		if((al[center].index_a + al[center].index_f)==0)
+		if((al[center].compl_a + al[center].compl_f)==0)
 			samplingTime[replica][center][6][count]=0;
 		else
-			samplingTime[replica][center][6][count]=t->last[center]/(al[center].index_a + al[center].index_f);
+			samplingTime[replica][center][6][count]=t->last[center]/(al[center].compl_a + al[center].compl_f);
 		
 		samplingTime[replica][center][7][count]=(double)(al[center].index_f);
 				
@@ -653,7 +657,9 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 					a[i].node = 0.0;
 					al[i].prev_index_a = al[i].index_a; 
 					al[i].prev_index_f = al[i].index_f; 
-					al[i].prev_numLoss_f = al[i].numLoss_f;	
+					al[i].prev_numLoss_f = al[i].numLoss_f;
+					al[i].prev_compl_a = al[i].compl_a;
+					al[i].prev_compl_f = al[i].compl_f;
 				}
 			}
 			interval++;
@@ -696,63 +702,7 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 		}
 		else if(t->current == events->carArr1.carArrivalTime) {
 			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
-			carArrival1(events, t, &sv1[0], &al[0], m[0]);/*
-			if(arrivals[0]!= 0 && arrivals[0]%SAMPLING==0){
-				//sampling
-				printf("Eccome...\n");fflush(stdout);
-				arrivals[0] += 1;
-				rho = (char *)malloc(30);
-				q = (char *)malloc(30);
-				n = (char *)malloc(30);
-				serv = (char *)malloc(30);
-				delay = (char *)malloc(30);
-				wait = (char *)malloc(30);
-				interArr = (char *)malloc(30);
-				fam = (char *)malloc(30);		
-		
-				//utilizzazione
-				sprintf(rho, "%f;", a[0].service/(t->current * m[0]));
-				fputs(rho, fps[0]);		
-		
-				//popolazione media nelle code
-				sprintf(q, "%f;", a[0].queue/t->current);
-				fputs(q, fps[0]);
-		
-				//popolazione media nel centro
-				sprintf(n, "%f;", a[0].node/t->current);
-				fputs(n, fps[0]);
-			
-				//tempo di servizio medio
-				sprintf(serv, "%f;", a[0].service/((al[0].index_a + al[0].index_f))*m[0]);
-				fputs(serv, fps[0]);	
-		
-				//tempo di attesa medio
-				sprintf(delay, "%f;", a[0].queue/(al[0].index_a + al[0].index_f));
-				fputs(delay, fps[0]);
-		
-				//tempo di risposta medio
-				sprintf(wait, "%f;", a[0].node/(al[0].index_a + al[0].index_f));
-				fputs(wait, fps[0]);
-		
-				//tempo di interarrivo medio
-				sprintf(interArr, "%f;", t->last[0]/(al[0].index_a + al[0].index_f));
-				fputs(interArr, fps[0]);
-		
-				//numero di arrivi delle famiglie
-				sprintf(fam, "%f;", (double)al[0].index_f);
-				fputs(fam, fps[0]);
-				
-				fputs("\n", fps[0]);
-		
-				free(rho);
-				free(q);
-				free(n);
-				free(serv);
-				free(delay);
-				free(wait);
-				free(interArr);
-				free(fam);
-			}*/
+			carArrival1(events, t, &sv1[0], &al[0], m[0]);
 		}
 		else if(t->current == events->familyArr1.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
@@ -760,11 +710,11 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 		}
 		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
 			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
-			carDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset);
+			carDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, &al[0]);
 		}
 		else if(t->current == nextCom1->completionTime && nextCom1->isFamily) {
 			printf("EVENTO: partenza di una famiglia dal centro 1.\n");
-			familyDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0]);
+			familyDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0], &al[0]);
 		}
 		else if(t->current == nextAb1->abandonTime) {
 			printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
@@ -776,7 +726,7 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 		}
 		else if(t->current == nextCom2->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
-			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1]);
+			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1], &al[1]);
 		}
 		else if(t->current == nextAb2->abandonTime) {
 			printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
@@ -792,11 +742,11 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 		}
 		else if(t->current == nextCom3->completionTime && !nextCom3->isFamily) {
 			printf("EVENTO: partenza di un'automobile dal centro 3.\n");
-			carDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset);
+			carDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, &al[2]);
 		}
 		else if(t->current == nextCom3->completionTime && nextCom3->isFamily) {
 			printf("EVENTO: partenza di una famiglia dal centro 3.\n");
-			familyDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2]);
+			familyDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2], &al[2]);
 		}
 		else if(t->current == events->familyArr4.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
@@ -804,7 +754,7 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 		}
 		else if(t->current == nextCom4->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 4.\n");
-			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3]);
+			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3], &al[3]);
 		}
 		else if(t->current == events->familyArr5.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
@@ -812,7 +762,7 @@ void simulation(int *m, int replica, double**** nsim, double ****samplingTime)
 		}
 		else if(t->current == nextCom5->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
-			departure5(events, &sv2[2], nextCom5->serverOffset);
+			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
 		}/*
 
 		printf("qA centro 1: %d\n", sv1[0].qA);
