@@ -716,7 +716,8 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		aSampling[4].node += (t->next - t->current)*xBusy5;
 
 		t->current = t->next;		//Clock update
-		printf("%f\n", t->current);fflush(stdout);
+		printf("Debugging: %f\n", t->current);fflush(stdout);
+		printf("Debugging: %f\n", al[0].index_a);fflush(stdout);
 		
 		struct next_abandon *nextAb1 = getMinAbandon(events->head1);
 		struct next_abandon *nextAb2 = getMinAbandon(events->head2);
@@ -857,7 +858,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		else if(t->current == nextCom5->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
 			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
-		}/*
+		}
 
 		printf("qA centro 1: %d\n", sv1[0].qA);
 		printf("qF centro 1: %d\n", sv1[0].qF);
@@ -891,7 +892,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		}
 		printf("\n");
 		printf("Clock: %f\n\n\n", t->current);
-		fflush(stdout);*/
+		fflush(stdout);
 
 		free(nextAb1);
 		free(nextAb2);
