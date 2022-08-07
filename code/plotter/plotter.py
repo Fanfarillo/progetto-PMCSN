@@ -268,6 +268,7 @@ def plotWaitingTime(centro):
 	plt.title("INTERARRIVO")
 	plt.show()
 	
+	
 	y = stats[7]
 	print(y)
 	#nparray = np.array(y)
