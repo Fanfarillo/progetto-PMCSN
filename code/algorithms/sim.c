@@ -1033,6 +1033,7 @@ double***** finite_sim(int **array_m)
 		initialize(array_m);
 		simulation(array_m, i, nsim, samplingTime);
 		deallocateDataStructures();
+		printf("REP: %d\n", i);fflush(stdout);
 	}
 	
 	//computeInterval();
