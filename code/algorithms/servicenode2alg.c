@@ -77,8 +77,9 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 		free(toRemove);
 	}
 	
-	if(svPtr->x[serverOffset] == -1) {
+	if(svPtr->x[serverOffset] < 0) {
 		eventsPtr->completionTimes2[serverOffset] = (double) INFINITY;
+		svPtr->x[serverOffset] = -3;
 	}
 	else if(svPtr->l >= n) {
 		//almeno un job in coda e genero il suo tempo di completamento

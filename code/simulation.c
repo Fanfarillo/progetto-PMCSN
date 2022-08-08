@@ -270,6 +270,28 @@ int main(int argc, char **argv){
 			exit(-2);
 		}
 	}*/
+	
+	FILE ** fps = createStatisticFiles();	
+	
+	double *****ret = finite_sim(array_m);
+	/*
+	for(int replica=0;replica<REPLICATIONS;replica++)
+	{
+		printf("-------------------------------------- REPLICA %d -----------------------------\n", replica);
+		for(int center=0;center<CENTERS;center++)
+		{
+			printf("-------------------------------------- CENTRO %d -----------------------------\n", center);
+			for(int interval=0;interval<INTERVALS;interval++)
+			{
+				printf("-------------------------------------- INTERVALLO %d -----------------------------\n", interval);
+				for(int stat=0;stat<STATISTICS;stat++)
+				{
+					printf("%d: %f\n", stat, ret[0][replica][center][interval][stat]);
+					fflush(stdout);	
+				}
+			}
+		}
+	}*/
 
 	int interval = atoi(argv[6]);
 
@@ -297,28 +319,6 @@ int main(int argc, char **argv){
 			fflush(stdout);
 			exit(-3);
 	}
-	
-	FILE ** fps = createStatisticFiles();	
-	
-	double *****ret = finite_sim(array_m);
-	/*
-	for(int replica=0;replica<REPLICATIONS;replica++)
-	{
-		printf("-------------------------------------- REPLICA %d -----------------------------\n", replica);
-		for(int center=0;center<CENTERS;center++)
-		{
-			printf("-------------------------------------- CENTRO %d -----------------------------\n", center);
-			for(int interval=0;interval<INTERVALS;interval++)
-			{
-				printf("-------------------------------------- INTERVALLO %d -----------------------------\n", interval);
-				for(int stat=0;stat<STATISTICS;stat++)
-				{
-					printf("%d: %f\n", stat, ret[0][replica][center][interval][stat]);
-					fflush(stdout);	
-				}
-			}
-		}
-	}*/
 	
 	char *stat_value;
 	FILE *fp = NULL;
