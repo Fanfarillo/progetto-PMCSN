@@ -87,7 +87,7 @@ void deallocateDataStructures() {
 
 }
 
-void initializeEventList(int *m) {
+void initializeEventList(int *m, bool simType) {
 	//m is maxArray
 
 	events->carArr1.carArrivalTime = getCarArrival(START);
@@ -146,8 +146,15 @@ void initializeEventList(int *m) {
 		events->completionTimes5[i] = (double) INFINITY;
 	}
 	
-	events-> changeInterval = 0.0;
-	events -> sampling = SAMPLINGINTERVAL;
+	if(simType){
+		events-> changeInterval = 0.0;
+		events -> sampling = SAMPLINGINTERVAL;
+	}
+	else{
+		events-> changeInterval = (double) INFINITY;
+		events -> sampling = (double) INFINITY;
+	}
+	
 
 }
 
@@ -303,7 +310,19 @@ void initialize(int **array_m)
 	initializeStateVariables(maxArray, array_m[0]);
 	initializeArrivalLoss();
 	initializeArrivals();	
-	initializeEventList(maxArray);	
+	initializeEventList(maxArray, true);	
+}
+
+
+void initializeSimInf(int *m)
+{
+	allocateDataStructures();
+	initializeTime();	
+	initializeArea();
+	initializeStateVariables(m, m);
+	initializeArrivalLoss();
+	initializeArrivals();	
+	initializeEventList(m, false);	
 }
 
 
@@ -679,6 +698,55 @@ void applyServersVariation(int *old_m, int *new_m, struct event_list *events, st
 
 }
 
+void computeAreaStrucuture(int *m){
+	int xBusy1 = countBusyServers(m[0], sv1[0].x);
+	a[0].service += (t->next - t->current)*xBusy1;
+	a[0].queue += (t->next - t->current)*(sv1[0].qA + sv1[0].qF);
+	a[0].node += (t->next - t->current)*(sv1[0].qA + sv1[0].qF + xBusy1);
+
+	int xBusy2 = countBusyServers(m[1], sv2[0].x);
+	a[1].service += (t->next - t->current)*xBusy2;
+	a[1].queue += (t->next - t->current)*(sv2[0].l - xBusy2);
+	a[1].node += (t->next - t->current)*(sv2[0].l);
+
+	int xBusy3 = countBusyServers(m[2], sv1[1].x);
+	a[2].service += (t->next - t->current)*xBusy3;
+	a[2].queue += (t->next - t->current)*(sv1[1].qA + sv1[1].qF);
+	a[2].node += (t->next - t->current)*(sv1[1].qA + sv1[1].qF + xBusy3);
+
+	int xBusy4 = countBusyServers(m[3], sv2[1].x);
+	a[3].service += (t->next - t->current)*xBusy4;
+	a[3].queue += (t->next - t->current)*(sv2[1].l - xBusy4);
+	a[3].node += (t->next - t->current)*(sv2[1].l);
+
+	int xBusy5 = countBusyServers(m[4], sv2[2].x);
+	a[4].service += (t->next - t->current)*xBusy5;
+	a[4].node += (t->next - t->current)*xBusy5;
+		
+	aSampling[0].service += (t->next - t->current)*xBusy1;
+	aSampling[0].queue += (t->next - t->current)*(sv1[0].qA + sv1[0].qF);
+	aSampling[0].node += (t->next - t->current)*(sv1[0].qA + sv1[0].qF + xBusy1);
+
+		
+	aSampling[1].service += (t->next - t->current)*xBusy2;
+	aSampling[1].queue += (t->next - t->current)*(sv2[0].l - xBusy2);
+	aSampling[1].node += (t->next - t->current)*(sv2[0].l);
+
+		
+	aSampling[2].service += (t->next - t->current)*xBusy3;
+	aSampling[2].queue += (t->next - t->current)*(sv1[1].qA + sv1[1].qF);
+	aSampling[2].node += (t->next - t->current)*(sv1[1].qA + sv1[1].qF + xBusy3);
+
+		
+	aSampling[3].service += (t->next - t->current)*xBusy4;
+	aSampling[3].queue += (t->next - t->current)*(sv2[1].l - xBusy4);
+	aSampling[3].node += (t->next - t->current)*(sv2[1].l);
+
+	
+	aSampling[4].service += (t->next - t->current)*xBusy5;
+	aSampling[4].node += (t->next - t->current)*xBusy5;
+}
+
 void simulation(int **array_m, int replica, double**** nsim, double ****samplingTime)
 
 {
@@ -691,53 +759,8 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 	while(events->carArr1.isCarArrivalActive || events->familyArr1.isFamilyArrivalActive || events->familyArr2.isFamilyArrivalActive || !isSystemEmpty(maxArray)) {
 
 		t->next = getMinimumTime(maxArray);		//Next event time
-
-		int xBusy1 = countBusyServers(m[0], sv1[0].x);
-		a[0].service += (t->next - t->current)*xBusy1;
-		a[0].queue += (t->next - t->current)*(sv1[0].qA + sv1[0].qF);
-		a[0].node += (t->next - t->current)*(sv1[0].qA + sv1[0].qF + xBusy1);
-
-		int xBusy2 = countBusyServers(m[1], sv2[0].x);
-		a[1].service += (t->next - t->current)*xBusy2;
-		a[1].queue += (t->next - t->current)*(sv2[0].l - xBusy2);
-		a[1].node += (t->next - t->current)*(sv2[0].l);
-
-		int xBusy3 = countBusyServers(m[2], sv1[1].x);
-		a[2].service += (t->next - t->current)*xBusy3;
-		a[2].queue += (t->next - t->current)*(sv1[1].qA + sv1[1].qF);
-		a[2].node += (t->next - t->current)*(sv1[1].qA + sv1[1].qF + xBusy3);
-
-		int xBusy4 = countBusyServers(m[3], sv2[1].x);
-		a[3].service += (t->next - t->current)*xBusy4;
-		a[3].queue += (t->next - t->current)*(sv2[1].l - xBusy4);
-		a[3].node += (t->next - t->current)*(sv2[1].l);
-
-		int xBusy5 = countBusyServers(m[4], sv2[2].x);
-		a[4].service += (t->next - t->current)*xBusy5;
-		a[4].node += (t->next - t->current)*xBusy5;
 		
-		aSampling[0].service += (t->next - t->current)*xBusy1;
-		aSampling[0].queue += (t->next - t->current)*(sv1[0].qA + sv1[0].qF);
-		aSampling[0].node += (t->next - t->current)*(sv1[0].qA + sv1[0].qF + xBusy1);
-
-		
-		aSampling[1].service += (t->next - t->current)*xBusy2;
-		aSampling[1].queue += (t->next - t->current)*(sv2[0].l - xBusy2);
-		aSampling[1].node += (t->next - t->current)*(sv2[0].l);
-
-		
-		aSampling[2].service += (t->next - t->current)*xBusy3;
-		aSampling[2].queue += (t->next - t->current)*(sv1[1].qA + sv1[1].qF);
-		aSampling[2].node += (t->next - t->current)*(sv1[1].qA + sv1[1].qF + xBusy3);
-
-		
-		aSampling[3].service += (t->next - t->current)*xBusy4;
-		aSampling[3].queue += (t->next - t->current)*(sv2[1].l - xBusy4);
-		aSampling[3].node += (t->next - t->current)*(sv2[1].l);
-
-		
-		aSampling[4].service += (t->next - t->current)*xBusy5;
-		aSampling[4].node += (t->next - t->current)*xBusy5;
+		computeAreaStrucuture(m);
 
 		t->current = t->next;		//Clock update
 		
@@ -817,11 +840,11 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		}
 		else if(t->current == events->carArr1.carArrivalTime) {
 			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
-			carArrival1(events, t, &sv1[0], &al[0], maxArray[0]);
+			carArrival1(events, t, &sv1[0], &al[0], maxArray[0], true);
 		}
 		else if(t->current == events->familyArr1.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
-			familyArrival1(events, t, &sv1[0], &al[0], maxArray[0]);
+			familyArrival1(events, t, &sv1[0], &al[0], maxArray[0], true);
 		}
 		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
 			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
@@ -837,7 +860,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		}
 		else if(t->current == events->familyArr2.familyArrivalTime) {
 			printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
-			arrival2(events, t, &sv2[0], &al[1], maxArray[1]);
+			arrival2(events, t, &sv2[0], &al[1], maxArray[1], true);
 		}
 		else if(t->current == nextCom2->completionTime) {
 			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
@@ -945,6 +968,8 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 	
 	sampling(interval, replica, nsim, m);
 	
+	
+	
 }
 
 
@@ -1000,16 +1025,20 @@ double***** finite_sim(int **array_m)
 		}
 	}		
 	
+	printf("MAI\n");fflush(stdout);
+	
 	//finite-horizon simulation
 	for(int i=0; i<REPLICATIONS; i++)
 	{
 		initialize(array_m);
 		simulation(array_m, i, nsim, samplingTime);
-		//clear();
+		deallocateDataStructures();
 	}
 	
 	//computeInterval();
 	//deallocateDataStructures();
+	
+	printf("22\n");fflush(stdout);
 	
 	double *****ret = (double *****)malloc(sizeof(double *****)*2);
 	ret[0] = nsim;
@@ -1018,9 +1047,380 @@ double***** finite_sim(int **array_m)
 	return ret;
 }
 
+void samplingBatch(int centerIndex, int *count, double ***siminf, double **sum, double **mean, double diff, int *m)
+{
+	double diffWelford;
+	
+	
+	siminf[centerIndex][0][(count[centerIndex]/B)-1]=a[centerIndex].service/((t->current-diff) * m[centerIndex]);
+	siminf[centerIndex][1][(count[centerIndex]/B)-1]=a[centerIndex].queue/(t->current-diff);
+	siminf[centerIndex][2][(count[centerIndex]/B)-1]=a[centerIndex].node/(t->current-diff);
+	siminf[centerIndex][3][(count[centerIndex]/B)-1]=a[centerIndex].service/(((al[centerIndex].compl_a-al[centerIndex].prev_compl_a) + (al[centerIndex].compl_f-al[centerIndex].prev_compl_f)));
+	siminf[centerIndex][4][(count[centerIndex]/B)-1]=a[centerIndex].queue/((al[centerIndex].compl_a-al[centerIndex].prev_compl_a) + (al[centerIndex].compl_f-al[centerIndex].prev_compl_f));
+	siminf[centerIndex][5][(count[centerIndex]/B)-1]=a[centerIndex].node/((al[centerIndex].compl_a-al[centerIndex].prev_compl_a) + (al[centerIndex].compl_f-al[centerIndex].prev_compl_f));
+	siminf[centerIndex][6][(count[centerIndex]/B)-1]=(t->last[centerIndex]-diff)/((al[centerIndex].index_a-al[centerIndex].prev_index_a) + (al[centerIndex].index_f-al[centerIndex].prev_index_f));
+	siminf[centerIndex][7][(count[centerIndex]/B)-1]=(double)(al[centerIndex].index_f-al[centerIndex].prev_index_f);
+	siminf[centerIndex][8][(count[centerIndex]/B)-1]=(double)(al[centerIndex].index_a-al[centerIndex].prev_index_a);
+	siminf[centerIndex][9][(count[centerIndex]/B)-1]=(double)(al[centerIndex].numLoss_f - al[centerIndex].prev_numLoss_f);
+	siminf[centerIndex][10][(count[centerIndex]/B)-1]=(double)(al[centerIndex].numLoss_f - al[centerIndex].prev_numLoss_f)/(double)(al[centerIndex].index_f-al[centerIndex].prev_index_f);	
+	int n=count[centerIndex]/B; 
 
-void infinite()
+	for(int i=0;i<STATISTICS;i++)
+	{
+		diffWelford= siminf[centerIndex][i][(count[centerIndex]/B)-1] - mean[centerIndex][i];
+		sum[centerIndex][i] += diffWelford * diffWelford * (n - 1.0) / n;
+		mean[centerIndex][i] += diffWelford / n;
+	}
+			
+	a[centerIndex].service = 0.0;
+	a[centerIndex].queue = 0.0;
+	a[centerIndex].node = 0.0;
+	al[centerIndex].prev_index_a = al[centerIndex].index_a; 
+	al[centerIndex].prev_index_f = al[centerIndex].index_f; 
+	al[centerIndex].prev_numLoss_f = al[centerIndex].numLoss_f;
+	al[centerIndex].prev_compl_a = al[centerIndex].compl_a;
+	al[centerIndex].prev_compl_f = al[centerIndex].compl_f;  
+}
+
+
+double*** infinite_sim(int *m)
 {
 
+	PlantSeeds(7000);
+	
+	double ***siminf = (double ***)malloc(sizeof(double**)*CENTERS);
+	
+	if(siminf==NULL)
+		errorMalloc(-9000);
+	for(int i=0;i<CENTERS;i++)
+	{
+		siminf[i] = (double **)malloc(sizeof(double *)*STATISTICS);
+		if(siminf[i]==NULL)
+			errorMalloc(-9001);
+		for(int j=0;j<STATISTICS;j++){
+			siminf[i][j] = (double *)malloc(sizeof(double)*K);
+			if(siminf[i][j]==NULL)
+				errorMalloc(-9002);
+		}
+	}
+	
+	
+	int count[5] = {0,0,0,0,0};
+	int rimanenti;
+	
+	double **sum = (double **)malloc(sizeof(double *)*CENTERS);
+	if(sum==NULL)
+		errorMalloc(-9000);
+		
+	for(int i=0;i<CENTERS;i++)
+	{
+		sum[i] = (double *)malloc(sizeof(double)*STATISTICS);
+		if(sum[i]==NULL)
+			errorMalloc(-9001);
+	}
+	
+	double **mean = (double **)malloc(sizeof(double *)*CENTERS);
+	if(mean==NULL)
+		errorMalloc(-9000);
+		
+	for(int i=0;i<CENTERS;i++)
+	{
+		mean[i] = (double *)malloc(sizeof(double)*STATISTICS);
+		if(mean[i]==NULL)
+			errorMalloc(-9001);
+	}
+	
+	
+	
+	initializeSimInf(m);
+	
+	double startBatch[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+	
+	
+	while(true){
+	
+		rimanenti=0;
+		for(int i=0;i<5;i++){
+			if(count[i]<B*K)
+				rimanenti++;
+		}
+		
+		if(rimanenti==0)
+			break;
+			
+		t->next = getMinimumTime(m);		//Next event time
+			
+		computeAreaStrucuture(m);
+
+		t->current = t->next;		//Clock update
+		
+		struct next_abandon *nextAb1 = getMinAbandon(events->head1);
+		struct next_abandon *nextAb2 = getMinAbandon(events->head2);
+		struct next_completion *nextCom1 = getMinCompletion(m[0], sv1[0].x, 1);
+		struct next_completion *nextCom2 = getMinCompletion(m[1], sv2[0].x, 2);
+		struct next_completion *nextCom3 = getMinCompletion(m[2], sv1[1].x, 3);
+		struct next_completion *nextCom4 = getMinCompletion(m[3], sv2[1].x, 4);
+		struct next_completion *nextCom5 = getMinCompletion(m[4], sv2[2].x, 5);
+
+		
+		if(t->current == events->carArr1.carArrivalTime) {
+			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
+			printf("CLOCK: %f\n", t->current);fflush(stdout);
+			carArrival1(events, t, &sv1[0], &al[0], m[0], false);
+			if(count[0] < B * K){
+				count[0]+=1;
+				if(count[0]%B==0)
+				{
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(0,count, siminf, sum,mean, startBatch[0], m);
+					startBatch[0] = t->current;
+				}
+			}
+		}
+		else if(t->current == events->familyArr1.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
+			familyArrival1(events, t, &sv1[0], &al[0], m[0], false);
+			if(count[0] < B * K){
+				count[0]+=1;
+				if(count[0]%B==0)
+				{
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(0,count, siminf, sum,mean, startBatch[0], m);    
+					startBatch[0] = t->current;
+				}
+			}
+		}
+		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
+			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
+			carDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, &al[0]);
+		}
+		else if(t->current == nextCom1->completionTime && nextCom1->isFamily) {
+			printf("EVENTO: partenza di una famiglia dal centro 1.\n");
+			familyDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0], &al[0]);
+		}
+		else if(t->current == nextAb1->abandonTime) {
+			printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
+			abandon1(events, &sv1[0], &al[0], nextAb1->jobId);
+		}
+		else if(t->current == events->familyArr2.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
+			arrival2(events, t, &sv2[0], &al[1], m[1], false);
+			if(count[1] < B * K){
+				count[1]+=1;			
+				if(count[1]%B==0)
+				{	
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(1,count, siminf, sum,mean, startBatch[1], m);    
+					startBatch[1] = t->current;
+				}
+			}
+		}
+		else if(t->current == nextCom2->completionTime) {
+			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
+			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1], &al[1]);	//Qui m[1] al posto di maxArray[1] è giusto
+		}
+		else if(t->current == nextAb2->abandonTime) {
+			printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
+			abandon2(events, &sv2[0], &al[1], nextAb2->jobId);
+		}
+		else if(t->current == events->carArr3.carArrivalTime) {
+			printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
+			carArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
+			if(count[2] < B * K){
+				count[2]+=1;
+				if(count[2]%B==0)
+				{
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(2,count, siminf, sum,mean, startBatch[2], m);   
+					startBatch[2] = t->current;
+				}
+			}
+		}
+		else if(t->current == events->familyArr3.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
+			familyArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
+			if(count[2] < B * K){
+				count[2]+=1;
+				if(count[2]%B==0)
+				{
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(2,count, siminf, sum,mean, startBatch[2], m);    
+					startBatch[2] = t->current;
+				}
+			}
+		}
+		else if(t->current == nextCom3->completionTime && !nextCom3->isFamily) {
+			printf("EVENTO: partenza di un'automobile dal centro 3.\n");
+			carDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, &al[2]);
+		}
+		else if(t->current == nextCom3->completionTime && nextCom3->isFamily) {
+			printf("EVENTO: partenza di una famiglia dal centro 3.\n");
+			familyDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2], &al[2]);
+		}
+		else if(t->current == events->familyArr4.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
+			arrival4(events, t, &sv2[1], &al[3], arr, m[3]);
+			if(count[3] < B * K){
+				count[3]+=1;
+				if(count[3]%B==0)
+				{
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(3,count, siminf, sum,mean,startBatch[3], m);   
+					startBatch[3] = t->current;
+				}
+			}
+		}
+		else if(t->current == nextCom4->completionTime) {
+			printf("EVENTO: partenza di una famiglia dal centro 4.\n");
+			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3], &al[3]);	//Qui m[3] al posto di maxArray[3] è giusto
+		}
+		else if(t->current == events->familyArr5.familyArrivalTime) {
+			printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
+			arrival5(events, t, &sv2[2], &al[4], arr, m[4]);
+			if(count[4] < B * K){
+				count[4]+=1;
+				if(count[4]%B==0)
+				{
+					//Mi calcolo la batch mean e poi uso Welford per calcolarmi la media e la varianza del campione delle medie batches
+					samplingBatch(4,count, siminf, sum,mean, startBatch[4], m);    
+					startBatch[4] = t->current;
+				}
+			}
+		}
+		else if(t->current == nextCom5->completionTime) {
+			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
+			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
+		}
+
+		/*if(true) {
+			printf("Clock: %f\n", t->current);
+
+			printf("qA centro 1: %d\n", sv1[0].qA);
+			printf("qF centro 1: %d\n", sv1[0].qF);
+			printf("Serventi centro 1: ");
+			for(int k=0; k<maxArray[0]; k++) {
+				printf("%d, ", sv1[0].x[k]);
+			}
+			printf("\n");
+			printf("l centro 2: %d\n", sv2[0].l);
+			printf("Serventi centro 2: ");
+			for(int k=0; k<maxArray[1]; k++) {
+				printf("%d, ", sv2[0].x[k]);
+			}
+			printf("\n");
+			printf("qA centro 3: %d\n", sv1[1].qA);
+			printf("qF centro 3: %d\n", sv1[1].qF);
+			printf("Serventi centro 3: ");
+			for(int k=0; k<maxArray[2]; k++) {
+				printf("%d, ", sv1[1].x[k]);
+			}
+			printf("\n");
+			printf("l centro 4: %d\n", sv2[1].l);
+			printf("Serventi centro 4: ");
+			for(int k=0; k<maxArray[3]; k++) {
+				printf("%d, ", sv2[1].x[k]);
+			}
+			printf("\n");
+			printf("Serventi centro 5: ");
+			for(int k=0; k<maxArray[4]; k++) {
+				printf("%d, ", sv2[2].x[k]);
+			}
+			printf("\n");
+
+			for(int k=0; k<CENTERS; k++) {
+				printf("ALCUNE STATISTICHE PER IL CENTRO %d:\n", k+1);
+				printf("aSampling[%d].service = %f\n", k, aSampling[k].service);
+				printf("aSampling[%d].queue = %f\n", k, aSampling[k].queue);
+				printf("aSampling[%d].node = %f\n", k, aSampling[k].node);
+				printf("al[%d].compl_a = %d\n", k, al[k].compl_a);
+				printf("al[%d].compl_f = %d\n", k, al[k].compl_f);
+				printf("al[%d].index_a = %d\n", k, al[k].index_a);
+				printf("al[%d].index_f = %d\n", k, al[k].index_f);
+				printf("al[%d].numLoss_f = %d\n", k, al[k].numLoss_f);
+			}
+			printf("\n");
+		}*/
+
+
+		free(nextAb1);
+		free(nextAb2);
+		free(nextCom1);
+		free(nextCom2);
+		free(nextCom3);
+		free(nextCom4);
+		free(nextCom5);					
+			
+			
+			
+	}
+	/*
+	double **stdv = (double **)malloc(sizeof(double*)*CENTERS);
+	if(stdv==NULL)
+		errorMalloc(9004);
+	for(int j=0;j<STATISTICS;j++){
+		stdv[j]=(double *)malloc(sizeof(double))
+		if(stdv[j]==NULL)
+			errorMalloc(9004);
+	}*/
+	double stdv;
+	
+	double **w = (double **)malloc(sizeof(double*)*CENTERS);
+	if(w==NULL)
+		errorMalloc(9004);
+	for(int j=0;j<STATISTICS;j++){
+		w[j]=(double *)malloc(sizeof(double));
+		if(w[j]==NULL)
+			errorMalloc(9004);
+	}
+	
+	int n;
+	double u, t;
+	
+	for(int j=0; j<STATISTICS;j++){
+		for(int i=0;i<CENTERS;i++)
+		{
+			n = count[i]/B;
+			stdv = sqrt(sum[i][j] / n);			
+    			u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */
+    			t = idfStudent(n - 1, u);                 /* critical value of t */
+    			w[i][j] = t * stdv / sqrt(n - 1);              /* interval half width */
+    			printf("INTERVALLO statistica %d\tcentro %d\n",j,i);
+    			printf("\nINTERVALLO based upon %d data points", n);
+    			printf(" INTERVALLOand with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
+    			printf("INTERVALLOthe expected value is in the interval");
+    			printf("INTERVALLO%10.2f +/- %6.10f\n", mean[i][j], w[i][j]);
+		}
+	}
+	
+	return siminf;
+	
+	
+	
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

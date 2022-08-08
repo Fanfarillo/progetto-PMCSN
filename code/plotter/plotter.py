@@ -8,8 +8,251 @@ import numpy as np
 #Se si cambia il file histogram.c potrebbe non funzionare correttamente
 #----------------------------------------------------------------------------------
 
+def plotInfiniteHorizon(centro):
+	if (centro < 1 | centro > 5):
+		print("Centro non valido...\n")
+		return 1
+	
+	utilizzazioni = []
+	numeroCoda = []
+	numeroCentro = []
+	servizi = []
+	attese = []
+	risposte = []
+	interarrivo = []
+	arriviFam = []
+	arriviAuto = []
+	nmPerdite = []
+	probDiPerdita = []
+	statistiche = []
+	
+	statistiche.append(utilizzazioni)
+	statistiche.append(numeroCoda)
+	statistiche.append(numeroCentro)
+	statistiche.append(servizi)
+	statistiche.append(attese)
+	statistiche.append(risposte)
+	statistiche.append(interarrivo)
+	statistiche.append(arriviFam)
+	statistiche.append(arriviAuto)
+	statistiche.append(nmPerdite)
+	statistiche.append(probDiPerdita)
+	
+	filename = "../data/infinite/servicenode" + str(centro) +  ".dat"
+	f = open("../data/infinite/servicenode1.dat", "r")
+	
+	numeroBatch = 0
+	stat = 0
+	item1 = 0
+	item2 = 0
+	item3 = 0
+	item4 = 0
+	item5 = 0
+	item6 = 0
+	item7 = 0
+	item8 = 0
+	item9 = 0
+	item10 = 0
+	item11 = 0	
+	count = 0
+	
+	for line in f:
+		if line != "\n":
+			
+			if(stat==0):			
+				rigaSplittata = line.split(";")
+				for rho in rigaSplittata:
+					if rho!="\n":
+						item1 = item1 + 1
+						print(rho)
+						statistiche[stat].append(float(rho))			
+			elif(stat==1):		
+				rigaSplittata = line.split(";")
+				for q in rigaSplittata:
+					if q!="\n":
+						item2 = item2 + 1
+						statistiche[stat].append(float(q))
+			elif(stat==2):
+				rigaSplittata = line.split(";")
+				for n in rigaSplittata:
+					if n!="\n":
+						item3 = item3 + 1
+						statistiche[stat].append(float(n))
+			elif(stat==3):
+				rigaSplittata = line.split(";")
+				for s in rigaSplittata:
+					if s!="\n":
+						item4 = item4 + 1
+						statistiche[stat].append(float(s))
+			elif(stat==4):
+				rigaSplittata = line.split(";")
+				for d in rigaSplittata:
+					if d!="\n":
+						item5 = item5 + 1
+						statistiche[stat].append(float(d))
+			elif(stat==5):
+				rigaSplittata = line.split(";")
+				for w in rigaSplittata:
+					if w!="\n":
+						item6 = item6 + 1
+						statistiche[stat].append(float(w))
+			elif(stat==6):
+				rigaSplittata = line.split(";")
+				for r in rigaSplittata:
+					if r!="\n":
+						item7 = item7 + 1
+						statistiche[stat].append(float(r))
+			elif(stat==7):
+				rigaSplittata = line.split(";")
+				for f in rigaSplittata:
+					if f!="\n":
+						item8 = item8 + 1
+						statistiche[stat].append(float(f))
+			elif(stat==8):
+				rigaSplittata = line.split(";")
+				for a in rigaSplittata:
+					if a!="\n":
+						item9 = item9 + 1
+						statistiche[stat].append(float(a))
+			elif(stat==9):
+				rigaSplittata = line.split(";")
+				for np in rigaSplittata:
+					if np!="\n":
+						item10 = item10 + 1
+						statistiche[stat].append(float(np))
+			elif(stat==10):
+				rigaSplittata = line.split(";")
+				for p in rigaSplittata:
+					if p!="\n":
+						item11 = item11 + 1
+						statistiche[stat].append(float(p))
+			count = count + 1
+			numeroBatch = numeroBatch + 1
+			if(numeroBatch%64==0):
+				stat=stat+1
+			
+	print("item1 = %d" %item1)
+	print("item2 = %d" %item1)
+	print("item3 = %d" %item1)
+	print("item4 = %d" %item1)
+	print("item5 = %d" %item1)
+	print("item6 = %d" %item1)
+	print("item7 = %d" %item1)
+	print("item8 = %d" %item1)
+	print("item9 = %d" %item1)
+	print("item10 = %d" %item1)
+	print("item11 = %d" %item1)
+	
+	y = statistiche[0]
+	print(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("rho")
+	plt.xlabel("Tempo")
+	plt.title("UTILIZZAZIONE")
+	plt.show()
+	
+	
+	y = statistiche[1]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("Nq")
+	plt.xlabel("Tempo")
+	plt.title("NUMERO JOBS IN CODA")
+	plt.show()
+	
+	y = statistiche[2]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("Ns")
+	plt.xlabel("Tempo")
+	plt.title("NUMERO JOBS NEL CENTRO")
+	plt.show()
+	
+	y = statistiche[3]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("S")
+	plt.xlabel("Tempo")
+	plt.title("TEMPO DI SERVIZIO")
+	plt.show()
+	
+	y = statistiche[4]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("Tq")
+	plt.xlabel("Tempo")
+	plt.title("TEMPO DI ATTESA")
+	plt.show()
+	
+	y = statistiche[5]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("Ns")
+	plt.xlabel("Tempo")
+	plt.title("TEMPO DI RISPOSTA")
+	plt.show()
+	
+	y = statistiche[6]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("r")
+	plt.xlabel("Tempo")
+	plt.title("INTERARRIVO")
+	plt.show()
+	
+	
+	y = statistiche[7]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("F")
+	plt.xlabel("Tempo")
+	plt.title("ARRIVI FAMIGLIE")
+	plt.show()
+	
+	y = statistiche[8]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("A")
+	plt.xlabel("Tempo")
+	plt.title("ARRIVI AUTOMOBILI")
+	plt.show()
+	
+	y = statistiche[9]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("perdite")
+	plt.xlabel("Tempo")
+	plt.title("NUMERO DI PERDITE NEL SISTEMA")
+	plt.show()
+	
+	y = statistiche[10]
+	print(y)
+	#nparray = np.array(y)
+	plt.plot(y, color = 'r')
+	plt.ylabel("P(perdita)")
+	plt.xlabel("Tempo")
+	plt.title("PROBABILITA' DI AVERE UNA PERDITA NEL SISTEMA")
+	plt.show()
+	
+	
+	return 0
+	
+	
+	
+	
+	
+	
 
-def plotWaitingTime(centro):
+def plotFiniteHorizon(centro):
 
 	if (centro < 1 | centro > 5):
 		print("Centro non valido...\n")
@@ -405,5 +648,7 @@ def standardizedSampleMeanDistribution():
 	
 #sampleMeanDistribution()
 #standardizedSampleMeanDistribution()
-plotWaitingTime(1)
+plotFiniteHorizon(1)
+
+plotInfiniteHorizon(1)
 

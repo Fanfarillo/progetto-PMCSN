@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len){
+void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len, bool simType){
 
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
@@ -17,7 +17,7 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 
 	//l'istante dell'arrivo che sto processando
 	tPtr->last[1] = tPtr->current;
-	if(eventsPtr->familyArr2.familyArrivalTime > STOP) {
+	if(eventsPtr->familyArr2.familyArrivalTime > STOP && simType) {
 		eventsPtr->familyArr2.familyArrivalTime = (double) INFINITY;
 		eventsPtr->familyArr2.isFamilyArrivalActive = false;
 		

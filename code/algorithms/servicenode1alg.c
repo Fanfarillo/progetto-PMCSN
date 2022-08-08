@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len){
+void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len, bool simType){
 
 	//incremento il numero delle automobili che arrivano al centro per calcolare le statistiche
 	alPtr->index_a = alPtr->index_a + 1;
@@ -15,7 +15,7 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 
 	//l'istante dell'arrivo che sto processando
 	tPtr->last[0] = tPtr->current;
-	if(eventsPtr-> carArr1.carArrivalTime > STOP) {
+	if(eventsPtr-> carArr1.carArrivalTime > STOP && simType) {
 		eventsPtr-> carArr1.carArrivalTime = (double) INFINITY;
 		eventsPtr-> carArr1.isCarArrivalActive = false;
 	}
@@ -45,7 +45,7 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}	
 }
 
-void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len){
+void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len, bool simType){
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
 	//genero l'istante di tempo del prossimo arrivo della famiglia
@@ -53,7 +53,7 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 
 	//l'istante dell'arrivo che sto processando
 	tPtr->last[0] = tPtr->current;
-	if(eventsPtr->familyArr1.familyArrivalTime > STOP) {
+	if(eventsPtr->familyArr1.familyArrivalTime > STOP && simType) {
 		eventsPtr->familyArr1.familyArrivalTime = (double) INFINITY;
 		eventsPtr->familyArr1.isFamilyArrivalActive = false;
 	}

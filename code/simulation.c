@@ -18,8 +18,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define LOC 0.99                       /* level of confidence,        */ 
-                                       /* use 0.95 for 95% confidence */
+
 #define SAMPLING 1                         
 
 void errorMalloc2(int code) {
@@ -220,9 +219,9 @@ FILE** createStatisticFiles(){
 
 int main(int argc, char **argv){
 
-	if(argc < 7){
+	if(argc < 2){
 		printf("ERRORE: i parametri passati in input al programma sono errati.\n");
-		printf("Formato richiesto: NUM_SERVENTI_CENTRO_1, NUM_SERVENTI_CENTRO_2, NUM_SERVENTI_CENTRO_3, NUM_SERVENTI_CENTRO_4, NUM_SERVENTI_CENTRO_5, FASCIA_ORARIA.\n");
+		printf("Formato richiesto: NOME_PROGRAMMA FASCIA_ORARIA.\n");
 		fflush(stdout);
 		exit(-1);
 	}
@@ -249,32 +248,13 @@ int main(int argc, char **argv){
 			exit(-6);
 		}
 	}
-
-/*	int* m = NULL;
-	m = (int *)malloc(sizeof(int)*(5));
-
-	if(m==NULL){
-		errorMalloc2(-1000);
-	}
-
-	m[0] = atoi(argv[1]);
-	m[1] = atoi(argv[2]);
-	m[2] = atoi(argv[3]);
-	m[3] = atoi(argv[4]);
-	m[4] = atoi(argv[5]);
-
-	for(int i=0; i<5; i++) {
-		if(m[i]<=0) {
-			printf("ERRORE: il numero di serventi specificato non è valido. Fornire un valore intero strettamente positivo.\n");
-			fflush(stdout);
-			exit(-2);
-		}
-	}*/
 	
 	FILE ** fps = createStatisticFiles();	
 	
+	printf("Prima\n");fflush(stdout);
 	double *****ret = finite_sim(array_m);
-	/*
+	printf("qua\n");fflush(stdout);
+	
 	for(int replica=0;replica<REPLICATIONS;replica++)
 	{
 		printf("-------------------------------------- REPLICA %d -----------------------------\n", replica);
@@ -291,34 +271,8 @@ int main(int argc, char **argv){
 				}
 			}
 		}
-	}*/
-
-	int interval = atoi(argv[6]);
-
-	switch(interval){
-		case 1:
-			interTime = 180.0;
-			break;
-		case 2:
-			interTime = 480.0;
-			break;
-		case 3:
-			interTime = 60.0;
-			break;
-		case 4:
-			interTime = 300.0;
-			break;
-		case 5:
-			interTime = 30.0;
-			break;
-		case 6:
-			interTime = 180.0;
-			break;
-		default:
-			printf("ERRORE: la fascia oraria specificata non è valida. Fornire un valore intero compreso tra 1 e 6.\n");
-			fflush(stdout);
-			exit(-3);
 	}
+	
 	
 	char *stat_value;
 	FILE *fp = NULL;
@@ -370,6 +324,57 @@ int main(int argc, char **argv){
 			}				
 			
 			fputs("\n", fps[center+10]);
+			
+		}
+	}
+	
+	int interval = atoi(argv[1]);
+
+	switch(interval){
+		case 1:
+			interTime = 180.0;
+			break;
+		case 2:
+			interTime = 480.0;
+			break;
+		case 3:
+			interTime = 60.0;
+			break;
+		case 4:
+			interTime = 300.0;
+			break;
+		case 5:
+			interTime = 30.0;
+			break;
+		case 6:
+			interTime = 180.0;
+			break;
+		default:
+			printf("ERRORE: la fascia oraria specificata non è valida. Fornire un valore intero compreso tra 1 e 6.\n");
+			fflush(stdout);
+			exit(-3);
+	}
+	
+	double ***siminf = infinite_sim(array_m[interval-1]);
+	
+	
+	
+	for(int center=0;center<CENTERS;center++){
+		fp = fps[center+5];
+		for(int stat=0;stat<STATISTICS;stat++)
+		{
+			for(int batch=0; batch<K;batch++){
+				stat_value=(char *)malloc(30);
+				if(stat_value==NULL)
+					errorMalloc2(-8000);
+				sprintf(stat_value, "%f;", siminf[center][stat][batch]);
+				fputs(stat_value, fps[center+5]);
+				free(stat_value);
+			
+				fputs("\n", fps[center+5]);
+				
+			}
+			fputs("\n", fps[center+5]);
 			
 		}
 	}
