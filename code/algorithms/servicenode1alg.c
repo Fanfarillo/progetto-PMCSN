@@ -6,6 +6,28 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+int getIdleOffset1(int len, struct state_variables1 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 0) {		//0 == IDLE
+			return i;
+		}
+	}
+	return -1;
+
+}
+
+bool doesExistCar1(int len, struct state_variables1 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
+			return true;
+		}
+	}
+	return false;
+
+}
+
 void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, int len, bool simType){
 
 	//incremento il numero delle automobili che arrivano al centro per calcolare le statistiche
@@ -20,21 +42,8 @@ void carArrival1(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 		eventsPtr-> carArr1.isCarArrivalActive = false;
 	}
 
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
-
-	bool existsCar = false;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset1(len, svPtr);
+	bool existsCar = doesExistCar1(len, svPtr);
 	
 	if(idleOffset >= 0 && !existsCar && svPtr->qA == 0){
 		svPtr->x[idleOffset] = 2;
@@ -58,26 +67,14 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 		eventsPtr->familyArr1.isFamilyArrivalActive = false;
 	}
 
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
-	
-	bool existsCar = false;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset1(len, svPtr);
+	bool existsCar = doesExistCar1(len, svPtr);
 
 	if(idleOffset >= 0 && svPtr->qF == 0 && (existsCar || svPtr->qA == 0)) {
 		svPtr->x[idleOffset] = 1;
 		eventsPtr->completionTimes1[idleOffset] = getService1(tPtr->current);
-	}else{
+	}
+	else {
 		if(svPtr->qF > N) {
 			//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
 			struct job *tailJob = (struct job *) malloc(sizeof(struct job));
@@ -101,12 +98,21 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 
 }
 
-void carDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, struct arrival_loss *alPtr){
+void carDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len, struct arrival_loss *alPtr){
 	alPtr -> compl_a += 1;
 
 	if(svPtr->x[serverOffset] < 0) {
 		eventsPtr->completionTimes1[serverOffset] = (double) INFINITY;
 		svPtr->x[serverOffset] = -3;
+
+		int idleOffset = getIdleOffset1(len, svPtr);
+
+		if(idleOffset >= 0 && svPtr->qA != 0){
+			svPtr->x[idleOffset] = 2;
+			eventsPtr->completionTimes1[idleOffset] = getService1(tPtr->current);
+			svPtr->qA--;
+		}
+
 	}
 	else if(svPtr->qA != 0) {
 		svPtr->qA--;
@@ -154,16 +160,9 @@ void carDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state
 }
 
 void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len, struct arrival_loss *alPtr){
-
 	alPtr -> compl_f += 1;
 	
-	bool existsCar = false;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	bool existsCar = doesExistCar1(len, svPtr);
 
 	if(svPtr->x[serverOffset] < 0) {
 		eventsPtr->completionTimes1[serverOffset] = (double) INFINITY;
@@ -249,13 +248,7 @@ void abandon1(struct event_list *eventsPtr, struct state_variables1 *svPtr, stru
 
 void fixState1(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, int firstServerOffset, int variation) {
 
-	bool existsCar = false;
-	for(int i=0; i<firstServerOffset; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	bool existsCar = doesExistCar1(firstServerOffset, svPtr);
 
 	if(!existsCar && svPtr->qA > 0) {
 		eventsPtr->completionTimes1[firstServerOffset] = getService1(tPtr->current);

@@ -18,18 +18,23 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
 #define SAMPLING 1                         
 
-void errorMalloc2(int code) {
+void errorMallocMain(int code) {
 
-	printf("ERRORE: impossibile allocare nuova memoria nell'heap.\n");
+	printf("ERRORE: impossibile allocare nuova memoria nell'heap [simulation.c].\n");
 	fflush(stdout);
 	exit(code);
 
 }
 
-/*
+/*void errorVerify(int code) {
+
+	printf("ERRORE: le statistiche di output della simulazione non sono consistenti.\n");
+	fflush(stdout);
+	exit(code);
+
+}
 
 void computeInterval(char *filename)
 {
@@ -81,7 +86,6 @@ void computeInterval(char *filename)
   		exit(-9000);
 	}
 }
-
 
 void verify(){
 
@@ -149,15 +153,13 @@ void verify(){
 
 FILE** createStatisticFiles(){
 
-
 	struct stat st1 = {0}, st2 = {0}, st3 = {0};
-
 
 	if (stat("./data", &st1) == -1) {
    		if(mkdir("./data", 0777)==-1){
    			printf("Errore creazione cartella data per i dati...\n");
    			fflush(stdout);
-   			exit(-100);
+   			exit(-4);
    		}
    		
 	}
@@ -166,7 +168,7 @@ FILE** createStatisticFiles(){
    		if(mkdir("./data/finite", 0777)==-1){
    			printf("Errore creazione cartella finite per i dati...\n");
    			fflush(stdout);
-   			exit(-101);
+   			exit(-5);
    		}
 	}
 	
@@ -174,7 +176,7 @@ FILE** createStatisticFiles(){
    		if(mkdir("./data/infinite", 0777)==-1){
    			printf("Errore creazione cartella infinite per i dati...\n");
    			fflush(stdout);
-   			exit(-102);
+   			exit(-6);
    		}
 	}
 
@@ -186,10 +188,11 @@ FILE** createStatisticFiles(){
 
 	FILE **fps = (FILE**) malloc(sizeof(FILE *)*15);
 	if(fps==NULL)
-		errorMalloc2(-1018);
+		errorMallocMain(-1002);
 	
 	for(int i = 0; i < 15; i++){
 		FILE *fp;
+
 		if(i<5)
 			filename = (char *) malloc(length1);
 		else if(i>=5 && i < 10)
@@ -197,13 +200,15 @@ FILE** createStatisticFiles(){
 		else
 			filename = (char *)malloc(length3);
 		if(filename==NULL)
-			errorMalloc2(-1019);
+			errorMallocMain(-1003);
+
 		if(i<5)
    			sprintf(filename,"./data/finite/servicenode%d.dat", i+1);
-   		else if(i>=5 && i < 10)
+   		else if(i>=5 && i<10)
    			sprintf(filename,"./data/infinite/servicenode%d.dat", i-4);
    		else
    			sprintf(filename,"./data/finite/servicenodesampling%d.dat", i-9);
+
    		fp = fopen(filename, "w");
    		if(fp==NULL){
    			printf("ERRORE: impossibile creare il file %s.\n", filename);
@@ -221,22 +226,25 @@ int main(int argc, char **argv){
 
 	if(argc < 2){
 		printf("ERRORE: i parametri passati in input al programma sono errati.\n");
-		printf("Formato richiesto: NOME_PROGRAMMA FASCIA_ORARIA.\n");
+		printf("Formato richiesto: NOME_PROGRAMMA, FASCIA_ORARIA.\n");
 		fflush(stdout);
 		exit(-1);
 	}
 
 	FILE *fp_config = fopen("properties.conf", "r");
-	if(fp_config==NULL)
-		errorMalloc2(-2000);
+	if(fp_config==NULL) {
+		printf("ERRORE: impossibile creare il file properties.conf.\n");
+		fflush(stdout);
+		exit(-2);
+	}
 
 	int **array_m = (int **)malloc(sizeof(int *)*6);
 	if(array_m==NULL)
-		errorMalloc2(-2001);
+		errorMallocMain(-1000);
 	for(int i=0; i<6; i++) {
 		array_m[i] = (int *)malloc(sizeof(int)*CENTERS);
 		if(array_m[i]==NULL)
-			errorMalloc2(-2002);
+			errorMallocMain(-1001);
 	}
 
 	int check;
@@ -245,17 +253,16 @@ int main(int argc, char **argv){
 		if(check!=5) {
 			printf("ERRORE: c'è stato un problema nella lettura del file properties.conf.\n");
 			fflush(stdout);
-			exit(-6);
+			exit(-3);
 		}
 	}
 	
-	FILE ** fps = createStatisticFiles();	
+	FILE **fps = createStatisticFiles();	
 	
-	printf("Prima\n");fflush(stdout);
+	//SIMULAZIONE A ORIZZONTE FINITO
 	double *****ret = finite_sim(array_m);
-	printf("qua\n");fflush(stdout);
 	
-	for(int replica=0;replica<REPLICATIONS;replica++)
+	/*for(int replica=0;replica<REPLICATIONS;replica++)
 	{
 		printf("-------------------------------------- REPLICA %d -----------------------------\n", replica);
 		for(int center=0;center<CENTERS;center++)
@@ -271,22 +278,23 @@ int main(int argc, char **argv){
 				}
 			}
 		}
-	}
-	
+	}*/
 	
 	char *stat_value;
 	FILE *fp = NULL;
-	for(int center=0;center<CENTERS;center++){
+
+	for(int center=0; center<CENTERS; center++){
 		fp = fps[center];
 		for(int replica=0; replica<REPLICATIONS;replica++)
 		{
 			for(int interval=0; interval<INTERVALS;interval++)
 			{
-				for(int stat=0;stat<STATISTICS;stat++)
+				for(int stat=0; stat<STATISTICS; stat++)
 				{
 					stat_value=(char *)malloc(30);
 					if(stat_value==NULL)
-						errorMalloc2(-8000);
+						errorMallocMain(-1004);
+
 					sprintf(stat_value, "%f;", ret[0][replica][center][interval][stat]);
 					fputs(stat_value, fps[center]);
 					free(stat_value);
@@ -301,28 +309,26 @@ int main(int argc, char **argv){
 	
 	int n = STOP/SAMPLINGINTERVAL;
 	
-	for(int center=0;center<CENTERS;center++){
+	for(int center=0; center<CENTERS; center++){
 		fp = fps[center+10];
+
 		for(int replica=0; replica<REPLICATIONS;replica++)
-		{
-			
-			for(int stat=0;stat<STATISTICS;stat++)
+		{			
+			for(int stat=0; stat<STATISTICS; stat++)
 			{
 				for(int count=0; count < n;count++)
 				{
 					stat_value=(char *)malloc(30);
 					if(stat_value==NULL)
-						errorMalloc2(-8000);
-					if(replica==2)
-						printf("stat %d count %d: %f\n", stat, count, ret[1][replica][center][stat][count]);
+						errorMallocMain(-1005);
+
 					sprintf(stat_value, "%f;", ret[1][replica][center][stat][count]);
 					fputs(stat_value, fps[center+10]);
 					free(stat_value);
 				}
 				fputs("\n", fps[center+10]);
 				
-			}				
-			
+			}							
 			fputs("\n", fps[center+10]);
 			
 		}
@@ -352,21 +358,23 @@ int main(int argc, char **argv){
 		default:
 			printf("ERRORE: la fascia oraria specificata non è valida. Fornire un valore intero compreso tra 1 e 6.\n");
 			fflush(stdout);
-			exit(-3);
+			exit(-7);
 	}
 	
+	//SIMULAZIONE A ORIZZONTE INFINITO
 	double ***siminf = infinite_sim(array_m[interval-1]);
 	
-	
-	
-	for(int center=0;center<CENTERS;center++){
+	for(int center=0; center<CENTERS; center++){
 		fp = fps[center+5];
-		for(int stat=0;stat<STATISTICS;stat++)
+
+		for(int stat=0; stat<STATISTICS; stat++)
 		{
-			for(int batch=0; batch<K;batch++){
+			for(int batch=0; batch<K; batch++){
+
 				stat_value=(char *)malloc(30);
 				if(stat_value==NULL)
-					errorMalloc2(-8000);
+					errorMallocMain(-1006);
+
 				sprintf(stat_value, "%f;", siminf[center][stat][batch]);
 				fputs(stat_value, fps[center+5]);
 				free(stat_value);
@@ -379,12 +387,14 @@ int main(int argc, char **argv){
 		}
 	}
 	
-	for(int i = 0; i<15;i++){
+	for(int i=0; i<15; i++){
 		fclose(fps[i]);
 	}
-	
-	printf("Simulazione completata con successo...\n");
-	fflush(stdout);
+
+	free(array_m);
+	free(fps);
+	free(ret);
+	free(siminf);
 
 	return 0;
 

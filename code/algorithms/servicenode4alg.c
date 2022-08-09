@@ -5,6 +5,17 @@
 #include <math.h>
 #include <stdlib.h>
 
+int getIdleOffset4(int len, struct state_variables2 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 0) {		//0 == IDLE
+			return i;
+		}
+	}
+	return -1;
+
+}
+
 void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
@@ -26,19 +37,15 @@ void arrival4(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	}
 	free(toRemove);
 
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset4(len, svPtr);
 
 	if(idleOffset >= 0) {
 		svPtr->x[idleOffset] = 1;
 		eventsPtr->completionTimes4[idleOffset] = getService4(tPtr->current);
 	}
+
 }
+
 void departure4(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrivals *arrPtr, int serverOffset, int n, struct arrival_loss *alPtr){
 	svPtr->l = svPtr->l - 1;
 	alPtr -> compl_f += 1;

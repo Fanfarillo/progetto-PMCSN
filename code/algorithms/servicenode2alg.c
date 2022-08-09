@@ -6,6 +6,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+int getIdleOffset2(int len, struct state_variables2 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 0) {		//0 == IDLE
+			return i;
+		}
+	}
+	return -1;
+
+}
+
 void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len, bool simType){
 
 	//incremento il numero delle famiglie che arrivano al centro
@@ -23,13 +34,7 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		
 	}
 
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset2(len, svPtr);
 
 	if(idleOffset >= 0) {
 		svPtr->x[idleOffset] = 1;

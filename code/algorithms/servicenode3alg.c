@@ -6,6 +6,28 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+int getIdleOffset3(int len, struct state_variables1 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 0) {		//0 == IDLE
+			return i;
+		}
+	}
+	return -1;
+
+}
+
+bool doesExistCar3(int len, struct state_variables1 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
+			return true;
+		}
+	}
+	return false;
+
+}
+
 void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
 	//incremento il numero delle automobili che arrivano al centro
 	alPtr->index_a = alPtr->index_a + 1;
@@ -25,21 +47,8 @@ void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 	}
 	free(toRemove);
 
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
-
-	bool existsCar = false;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset3(len, svPtr);
+	bool existsCar = doesExistCar3(len, svPtr);
 	
 	if(idleOffset >= 0 && !existsCar && svPtr->qA == 0){
 		svPtr->x[idleOffset] = 2;
@@ -49,8 +58,6 @@ void carArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_v
 		svPtr->qA++;
 	}	
 }
-
-
 
 void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
 	//incremento il numero delle famiglie che arrivano al centro
@@ -72,22 +79,8 @@ void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct stat
 	}
 	free(toRemove);
 	
-
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
-	
-	bool existsCar = false;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset3(len, svPtr);
+	bool existsCar = doesExistCar3(len, svPtr);
 
 	if(idleOffset >= 0 && svPtr->qF == 0 && (existsCar || svPtr->qA == 0)) {
 		svPtr->x[idleOffset] = 1;
@@ -97,12 +90,27 @@ void familyArrival3(struct event_list *eventsPtr, struct time *tPtr, struct stat
 		svPtr->qF++;
 	}
 }
-void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, struct arrival_loss *alPtr){
+
+void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len, struct arrival_loss *alPtr){
 	alPtr -> compl_a += 1;
 
 	if(svPtr->x[serverOffset] < 0) {
 		eventsPtr->completionTimes3[serverOffset] = (double) INFINITY;
 		svPtr->x[serverOffset] = -3;
+
+		int idleOffset = -1;
+		for(int i=0; i<len; i++) {
+			if(svPtr->x[i] == 0) {		//0 == IDLE
+				idleOffset = i;
+				break;
+			}
+		}
+
+		if(idleOffset >= 0 && svPtr->qA != 0){
+			svPtr->x[idleOffset] = 2;
+			eventsPtr->completionTimes3[idleOffset] = getService3(tPtr->current);
+			svPtr->qA--;
+		}
 	}
 	else if(svPtr->qA != 0) {
 		svPtr->qA--;
@@ -119,16 +127,10 @@ void carDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state
 	}
 }
 
-
 void familyDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, struct arrivals *arrPtr, int serverOffset, int len, struct arrival_loss *alPtr){
 	alPtr -> compl_f += 1;
-	bool existsCar = false;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+
+	bool existsCar = doesExistCar3(len, svPtr);
 
 	if(svPtr->x[serverOffset] < 0) {
 		eventsPtr->completionTimes3[serverOffset] = (double) INFINITY;
@@ -172,13 +174,7 @@ void familyDeparture3(struct event_list *eventsPtr, struct time *tPtr, struct st
 
 void fixState3(struct event_list *eventsPtr, struct time *tPtr, struct state_variables1 *svPtr, int firstServerOffset, int variation) {
 
-	bool existsCar = false;
-	for(int i=0; i<firstServerOffset; i++) {
-		if(svPtr->x[i] == 2 || svPtr->x[i] == -2) {		//2 == CAR; -2 == CAR ma in un servente che è stato appena disattivato
-			existsCar = true;
-			break;
-		}
-	}
+	bool existsCar = doesExistCar3(firstServerOffset, svPtr);
 
 	if(!existsCar && svPtr->qA > 0) {
 		eventsPtr->completionTimes3[firstServerOffset] = getService3(tPtr->current);

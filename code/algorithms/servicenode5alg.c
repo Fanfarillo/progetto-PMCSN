@@ -6,6 +6,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+int getIdleOffset5(int len, struct state_variables2 *svPtr) {
+
+	for(int i=0; i<len; i++) {
+		if(svPtr->x[i] == 0) {		//0 == IDLE
+			return i;
+		}
+	}
+	return -1;
+
+}
+
 void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, struct arrivals *arrPtr, int len){
 
 	alPtr->index_f = alPtr->index_f + 1;
@@ -26,13 +37,7 @@ void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 	}
 	free(toRemove);
 
-	int idleOffset = -1;
-	for(int i=0; i<len; i++) {
-		if(svPtr->x[i] == 0) {		//0 == IDLE
-			idleOffset = i;
-			break;
-		}
-	}
+	int idleOffset = getIdleOffset5(len, svPtr);
 
 	if(idleOffset >= 0) {
 		svPtr->x[idleOffset] = 1;
@@ -45,6 +50,7 @@ void arrival5(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 }
 
 void departure5(struct event_list *eventsPtr, struct state_variables2 *svPtr, int serverOffset, struct arrival_loss *alPtr){
+
 	alPtr -> compl_f += 1;
 	eventsPtr->completionTimes5[serverOffset] = (double) INFINITY;
 	svPtr->x[serverOffset] = 0;
