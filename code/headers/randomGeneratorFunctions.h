@@ -2,7 +2,7 @@
 #define STOP 50400.0
 #define N 1
 
-#define P_CAR 0.6
+#define P_CAR 0.1
 #define QE 0.4
 #define QT 0.5
 #define QP 0.4

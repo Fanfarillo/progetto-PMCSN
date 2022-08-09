@@ -593,14 +593,44 @@ void sampling(int interval, int replica, double ****nsim, int *m)
 	}
 }
 
-void samplingTimeFunction(int count, int replica, double ****samplingTime, int *m)
+void samplingTimeFunction(int count, int replica, double ****samplingTime, int **array_m, int interval)
 {
+	double denominatore = 0.0;
+	double sizeInterval[6] = {7200.0, 3600.0, 10800.0, 10800.0, 14400.0, 3600.0};
+	double diff;
+	
+	switch(interval){		
+		case 1:
+			diff=0.0;
+			break;
+		case 2:
+			diff=7200.0;
+			break;
+		case 3:
+			diff=10800.0;
+			break;
+		case 4:
+			diff=21600.0;
+			break;
+		case 5:
+			diff=32400.0;
+			break;
+		case 6:
+			diff=46800.0;
+			break;
+	}
 	for(int center=0;center<CENTERS;center++)
 	{
-		if((t->current * m[center])==0)
+		for(int i=0;i<interval-1;i++){
+				denominatore += array_m[i][center]*sizeInterval[i];
+		}
+		denominatore += t->current - diff;
+		if(denominatore==0)
 			samplingTime[replica][center][0][count]=0;
-		else
-			samplingTime[replica][center][0][count]=aSampling[center].service/(t->current * m[center]);		//UTILIZZAZIONE
+		else{			
+			samplingTime[replica][center][0][count]=aSampling[center].service/denominatore;		//UTILIZZAZIONE
+		printf("UTILIZZAZIONE:\treplica = %d\tcount = %d\tvalore = %f\tcentro = %d\tfascia = %f\n",replica, count, samplingTime[replica][center][0][count], center, interTime);fflush(stdout);
+		}
 		
 		if(t->current==0)
 			samplingTime[replica][center][1][count]=0;
@@ -724,6 +754,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 	int interval = 0;
 	int count=0;
 	int *m = array_m[0];
+	int lastJobServerNum[5] = {0,0,0,0,0};
 
 	while(events->carArr1.isCarArrivalActive || events->familyArr1.isFamilyArrivalActive || events->familyArr2.isFamilyArrivalActive || !isSystemEmpty(maxArray)) {
 
@@ -760,42 +791,67 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 			if(events->changeInterval==0.0){			
 				interTime = 180.0;
 				events->changeInterval = 7200.0;
+				printf("AAAA\n");fflush(stdout);
 			}
 			else if(events->changeInterval==7200.0){			
 				interTime = 480.0;
 				events->changeInterval = 10800.0;
 				m = array_m[1];
 				applyServersVariation(array_m[0], m, events, t, sv1, sv2);
+				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==10800.0){
 				interTime = 60.0;
 				events->changeInterval = 21600.0;
 				m = array_m[2];
 				applyServersVariation(array_m[1], m, events, t, sv1, sv2);
+				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==21600.0){
 				interTime = 300.0;
 				events->changeInterval = 32400.0;
 				m = array_m[3];
 				applyServersVariation(array_m[2], m, events, t, sv1, sv2);
+				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==32400.0){
 				interTime = 30.0;
 				events->changeInterval = 46800.0;
 				m = array_m[4];
 				applyServersVariation(array_m[3], m, events, t, sv1, sv2);
+				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==46800.0){
 				interTime = 180.0;
 				events->changeInterval = (double) INFINITY;
 				m = array_m[5];
 				applyServersVariation(array_m[4], m, events, t, sv1, sv2);
+				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 		}
 
 		else if(t->current == events->sampling){
 			printf("EVENTO: sampling temporale num %d.\n", count);
-			samplingTimeFunction(count, replica, samplingTime, m);
+			for(int i=0; i<CENTERS;i++){
+				lastJobServerNum[i]=0;
+			}
+			for(int j=0;j<maxArray[0];j++)
+			{
+				if(sv1[0].x[j]==-1 || sv1[0].x[j]==-2)
+					lastJobServerNum[0]+=1;
+			}
+			for(int j=0;j<maxArray[1];j++)
+			{
+				if(sv2[0].x[j]==-1 || sv2[0].x[j]==-2)
+					lastJobServerNum[1]+=1;
+			}
+			for(int j=0;j<maxArray[2];j++)
+			{
+				if(sv1[1].x[j]==-1 || sv1[1].x[j]==-2)
+					lastJobServerNum[2]+=1;
+			}
+			printf("SAMPL = %d\n", m[2]);fflush(stdout);
+			samplingTimeFunction(count, replica, samplingTime, array_m, interval);
 			if(t->current + SAMPLINGINTERVAL <= STOP){
 				events->sampling += SAMPLINGINTERVAL;
 				count++;

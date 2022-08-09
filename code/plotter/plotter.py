@@ -8,6 +8,11 @@ import numpy as np
 #Se si cambia il file histogram.c potrebbe non funzionare correttamente
 #----------------------------------------------------------------------------------
 
+#BATCHNUM = 64
+BATCHNUM = 128
+STATISTICS = 11
+SAMPLESIZE = 168
+
 def plotInfiniteHorizon(centro):
 	if (centro < 1 | centro > 5):
 		print("Centro non valido...\n")
@@ -39,7 +44,7 @@ def plotInfiniteHorizon(centro):
 	statistiche.append(probDiPerdita)
 	
 	filename = "../data/infinite/servicenode" + str(centro) +  ".dat"
-	f = open("../data/infinite/servicenode1.dat", "r")
+	f = open(filename, "r")
 	
 	numeroBatch = 0
 	stat = 0
@@ -128,7 +133,7 @@ def plotInfiniteHorizon(centro):
 						statistiche[stat].append(float(p))
 			count = count + 1
 			numeroBatch = numeroBatch + 1
-			if(numeroBatch%64==0):
+			if(numeroBatch%BATCHNUM==0):
 				stat=stat+1
 			
 	print("item1 = %d" %item1)
@@ -248,7 +253,7 @@ def plotInfiniteHorizon(centro):
 	
 	
 	
-	
+REPLICATIONS = 16
 	
 	
 
@@ -284,18 +289,18 @@ def plotFiniteHorizon(centro):
 	statistiche.append(probDiPerdita)
 	
 	#costruzione struttura dati per la manipolazione dei dati
-	for stat in range(0,11):
+	for stat in range(0,STATISTICS):
 		statistiche[stat] = []
-		for replica in range(0,16):
+		for replica in range(0,REPLICATIONS):
 			statistiche[stat].append([])
 		
 	#print(statistiche)
 	
 	filename = "../data/finite/servicenodesampling" + str(centro) +  ".dat"
-	f = open("../data/finite/servicenodesampling1.dat", "r")	
+	f = open(filename, "r")	
 	
 	replica = []
-	for i in range(0,16):
+	for i in range(0,REPLICATIONS):
 		replica.append(0)
 	
 	count = 0
@@ -315,77 +320,77 @@ def plotFiniteHorizon(centro):
 	
 	for line in f:
 		if line != "\n":
-			if(count%11==0):			
+			if(count%STATISTICS==0):			
 				rigaSplittata = line.split(";")
 				for rho in rigaSplittata:
 					if rho!="\n":
 						item1 = item1 + 1
 						statistiche[0][replica[0]].append(float(rho))
 				replica[0] = replica[0] + 1				
-			elif(count%11==1):		
+			elif(count%STATISTICS==1):		
 				rigaSplittata = line.split(";")
 				for q in rigaSplittata:
 					if q!="\n":
 						item2 = item2 + 1
 						statistiche[1][replica[1]].append(float(q))
 				replica[1] = replica[1] + 1
-			elif(count%11==2):
+			elif(count%STATISTICS==2):
 				rigaSplittata = line.split(";")
 				for n in rigaSplittata:
 					if n!="\n":
 						item3 = item3 + 1
 						statistiche[2][replica[2]].append(float(n))
 				replica[2] = replica[2] + 1
-			elif(count%11==3):
+			elif(count%STATISTICS==3):
 				rigaSplittata = line.split(";")
 				for s in rigaSplittata:
 					if s!="\n":
 						item4 = item4 + 1
 						statistiche[3][replica[3]].append(float(s))
 				replica[3] = replica[3] + 1
-			elif(count%11==4):
+			elif(count%STATISTICS==4):
 				rigaSplittata = line.split(";")
 				for d in rigaSplittata:
 					if d!="\n":
 						item5 = item5 + 1
 						statistiche[4][replica[4]].append(float(d))
 				replica[4] = replica[4] + 1
-			elif(count%11==5):
+			elif(count%STATISTICS==5):
 				rigaSplittata = line.split(";")
 				for w in rigaSplittata:
 					if w!="\n":
 						item6 = item6 + 1
 						statistiche[5][replica[5]].append(float(w))
 				replica[5] = replica[5] + 1
-			elif(count%11==6):
+			elif(count%STATISTICS==6):
 				rigaSplittata = line.split(";")
 				for r in rigaSplittata:
 					if r!="\n":
 						item7 = item7 + 1
 						statistiche[6][replica[6]].append(float(r))
 				replica[6] = replica[6] + 1
-			elif(count%11==7):
+			elif(count%STATISTICS==7):
 				rigaSplittata = line.split(";")
 				for f in rigaSplittata:
 					if f!="\n":
 						item8 = item8 + 1
 						statistiche[7][replica[7]].append(float(f))
 				replica[7] = replica[7] + 1
-			elif(count%11==8):
+			elif(count%STATISTICS==8):
 				rigaSplittata = line.split(";")
 				for a in rigaSplittata:
 					if a!="\n":
 						item9 = item9 + 1
 						statistiche[8][replica[8]].append(float(a))
 				replica[8] = replica[8] + 1
-			elif(count%11==9):
+			elif(count%STATISTICS==9):
 				rigaSplittata = line.split(";")
 				for np in rigaSplittata:
 					if np!="\n":
 						item10 = item10 + 1
 						statistiche[9][replica[9]].append(float(np))
 				replica[9] = replica[9] + 1
-			elif(count%11==10):
+			elif(count%STATISTICS==10):
 				rigaSplittata = line.split(";")
 				for p in rigaSplittata:
 					if p!="\n":
@@ -434,14 +439,14 @@ def plotFiniteHorizon(centro):
 	count = 0
 	
 	#costruzione dei campioni
-	for stat in range(0,11):
-		for value in range(0,168):
+	for stat in range(0,STATISTICS):
+		for value in range(0,SAMPLESIZE):
 			sommatoria = 0.0
-			for rep in range(0,16):
+			for rep in range(0,REPLICATIONS):
 				sommatoria = sommatoria + statistiche[stat][rep][value]
-			media = float(sommatoria / 16)
+			media = float(sommatoria / REPLICATIONS)
 			stats[stat].append(media)
-	for i in range(0,11):
+	for i in range(0,STATISTICS):
 		count = 0
 		for j in stats[i]:
 			count = count + 1
@@ -549,106 +554,19 @@ def plotFiniteHorizon(centro):
 	plt.xlabel("Tempo")
 	plt.title("PROBABILITA' DI AVERE UNA PERDITA NEL SISTEMA")
 	plt.show()
-	
-	
-	
+		
 	return 0
 	
 	
-	
-	
 
-def sampleMeanDistribution():
-
-	variates = []
-	samples = []
-	
-	#Apro il file contenente le variate random
-	f = open("histogramdata.dat", "r")
-	
-	#Leggo le variate random generate dalla simulazione
-	for line in f:
-		y = line.split()
-		#print(float(y[0]))
-		variates.append(float(y[0]))
-
-	#La dimensione del campione è 36
-	sampleSize = 36
-	
-	#Calcolo delle medie campionarie
-	somma=0
-	n=0
-	p = 0	
-	for i in range(1,10001):
-		p=p+1
-		if(i%sampleSize==0):
-			somma = somma + variates[i-1]
-			#print(float(somma/n))
-			n=n+1
-			samples.append(float(somma/n))
-			n=0	
-			somma=0
-			continue
-		somma = somma + variates[i-1]
-		n = n + 1		
-	
-	#La media campionaria è uno stimatore puntuale non distorto della media
-	somma = 0
-	for i in range(0, len(samples)):
-		somma = somma + samples[i]
-	print("La media delle medie campionarie converge alla media teorica: ", float(somma/len(samples)))
-	
-	#Stampo le medie campionarie calcolate e il numero delle iterazioni eseguite
-	print(samples)
-	print("Numero iterazioni: ", p)
-	
-	#Costruzione dell'istogramma delle medie campionarie
-	nparray = np.array(samples)
-	plt.hist(nparray, density=True)
-	plt.show()
-	
-def standardizedSampleMeanDistribution():
-
-	variates = []
-	samples = []
-	
-	f = open("histogramdata.dat", "r")
-	
-	for line in f:
-		y = line.split()
-		#print(float(y[0]))
-		variates.append(float(y[0]))
-
-	sampleSize = 36
-
-	somma=0
-	n=0
-	p = 0	
-	for i in range(1,10001):
-		p=p+1
-		if(i%sampleSize==0):
-			somma = somma + variates[i-1]
-			n=n+1
-			samples.append(float((float(somma/n)-2)/(2/6)))
-			n=0	
-			somma=0
-			continue
-		somma = somma + variates[i-1]
-		n = n + 1
-		
-	print(samples)
-	print("Numero iterazioni: ", p)
-	
-	nparray = np.array(samples)
-	plt.hist(nparray, density=True)
-	plt.show()
-	
-
-	
-	
-#sampleMeanDistribution()
-#standardizedSampleMeanDistribution()
-plotFiniteHorizon(1)
-
+#plotFiniteHorizon(1)
+#plotFiniteHorizon(2)
+#plotFiniteHorizon(3)
+#plotFiniteHorizon(4)
+#plotFiniteHorizon(5)
 plotInfiniteHorizon(1)
+plotInfiniteHorizon(2)
+plotInfiniteHorizon(3)
+plotInfiniteHorizon(4)
+plotInfiniteHorizon(5)
 
