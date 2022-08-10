@@ -253,7 +253,7 @@ def plotInfiniteHorizon(centro):
 	
 	
 	
-REPLICATIONS = 16
+REPLICATIONS = 128
 	
 	
 
@@ -565,8 +565,8 @@ def plotFiniteHorizon(centro):
 #plotFiniteHorizon(4)
 #plotFiniteHorizon(5)
 plotInfiniteHorizon(1)
-plotInfiniteHorizon(2)
-plotInfiniteHorizon(3)
-plotInfiniteHorizon(4)
-plotInfiniteHorizon(5)
+#plotInfiniteHorizon(2)
+#plotInfiniteHorizon(3)
+#plotInfiniteHorizon(4)
+#plotInfiniteHorizon(5)
 

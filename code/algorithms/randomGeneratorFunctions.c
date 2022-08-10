@@ -19,19 +19,28 @@ double Exponential(double mu)
 
 double getCarArrival(double arrival) {
 	SelectStream(0);
-	arrival += Exponential(interTime/(1-QE)/P_CAR);
+	if(P_CAR==0)
+		arrival = (double) INFINITY;
+	else
+		arrival += Exponential(interTime/(P_CAR));
 	return arrival;
 }
 
 double getFamilyArrival1(double arrival){
 	SelectStream(1);
-	arrival += Exponential(interTime/(1-QE)/(1-P_CAR));
+	if(1-QE-P_CAR==0)
+		arrival = (double) INFINITY;
+	else
+		arrival += Exponential(interTime/(1-QE-P_CAR));
   	return arrival;
 }
 
 double getFamilyArrival2(double arrival) {
 	SelectStream(2);
-	arrival += Exponential(interTime/QE);
+	if(QE==0)
+		arrival = (double) INFINITY;
+	else
+		arrival += Exponential(interTime/QE);
   	return arrival;
 }
 

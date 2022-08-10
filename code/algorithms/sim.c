@@ -82,13 +82,32 @@ void deallocateDataStructures() {
 void initializeEventList(int *m, bool simType) {
 	//m is maxArray
 
-	events->carArr1.carArrivalTime = getCarArrival(START);
-	events->carArr1.isCarArrivalActive = true;
-	events->familyArr1.familyArrivalTime = getFamilyArrival1(START);
-	events->familyArr1.isFamilyArrivalActive = true;
+	if(P_CAR==0) {
+		events->carArr1.carArrivalTime = (double) INFINITY;
+		events->carArr1.isCarArrivalActive = false;
+	}
+	else {
+		events->carArr1.carArrivalTime = getCarArrival(START);
+		events->carArr1.isCarArrivalActive = true;
+	}
 
-	events->familyArr2.familyArrivalTime = getFamilyArrival2(START);
-	events->familyArr2.isFamilyArrivalActive = true;
+	if(1-QE-P_CAR==0) {
+		events->familyArr1.familyArrivalTime = (double) INFINITY;
+		events->familyArr1.isFamilyArrivalActive = false;
+	}
+	else {
+		events->familyArr1.familyArrivalTime = getFamilyArrival1(START);
+		events->familyArr1.isFamilyArrivalActive = true;
+	}
+	
+	if(QE==0) {
+		events->familyArr2.familyArrivalTime = (double) INFINITY;
+		events->familyArr2.isFamilyArrivalActive = false;
+	}
+	else {
+		events->familyArr2.familyArrivalTime = getFamilyArrival2(START);
+		events->familyArr2.isFamilyArrivalActive = true;
+	}
 
 	events->carArr3.carArrivalTime = (double) INFINITY;
 	events->carArr3.isCarArrivalActive = true;
@@ -754,7 +773,6 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 	int interval = 0;
 	int count=0;
 	int *m = array_m[0];
-	int lastJobServerNum[5] = {0,0,0,0,0};
 
 	while(events->carArr1.isCarArrivalActive || events->familyArr1.isFamilyArrivalActive || events->familyArr2.isFamilyArrivalActive || !isSystemEmpty(maxArray)) {
 
@@ -832,25 +850,6 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 
 		else if(t->current == events->sampling){
 			printf("EVENTO: sampling temporale num %d.\n", count);
-			for(int i=0; i<CENTERS;i++){
-				lastJobServerNum[i]=0;
-			}
-			for(int j=0;j<maxArray[0];j++)
-			{
-				if(sv1[0].x[j]==-1 || sv1[0].x[j]==-2)
-					lastJobServerNum[0]+=1;
-			}
-			for(int j=0;j<maxArray[1];j++)
-			{
-				if(sv2[0].x[j]==-1 || sv2[0].x[j]==-2)
-					lastJobServerNum[1]+=1;
-			}
-			for(int j=0;j<maxArray[2];j++)
-			{
-				if(sv1[1].x[j]==-1 || sv1[1].x[j]==-2)
-					lastJobServerNum[2]+=1;
-			}
-			printf("SAMPL = %d\n", m[2]);fflush(stdout);
 			samplingTimeFunction(count, replica, samplingTime, array_m, interval);
 			if(t->current + SAMPLINGINTERVAL <= STOP){
 				events->sampling += SAMPLINGINTERVAL;

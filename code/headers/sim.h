@@ -1,4 +1,4 @@
-#define REPLICATIONS 16
+#define REPLICATIONS 128
 #define CENTERS 5
 #define STATISTICS 11
 #define INTERVALS 6
