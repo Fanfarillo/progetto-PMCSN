@@ -5,7 +5,7 @@
 #define SAMPLINGINTERVAL 300
 
 #define B 1024
-#define K 128
+#define K 64
 #define LOC 0.99 
 
 double***** finite_sim(int **array_m);

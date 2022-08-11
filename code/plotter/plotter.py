@@ -1,17 +1,15 @@
 # coding=utf-8
 
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy as npy
 
 #----------------------------------------------------------------------------------
 #Attenzione: questo programma funziona con un numero di variate random ben preciso.
 #Se si cambia il file histogram.c potrebbe non funzionare correttamente
 #----------------------------------------------------------------------------------
 
-#BATCHNUM = 64
-BATCHNUM = 128
+BATCHNUM = 64
 STATISTICS = 11
-SAMPLESIZE = 168
 
 def plotInfiniteHorizon(centro):
 	if (centro < 1 | centro > 5):
@@ -147,6 +145,39 @@ def plotInfiniteHorizon(centro):
 	print("item9 = %d" %item1)
 	print("item10 = %d" %item1)
 	print("item11 = %d" %item1)
+
+	"""risposte = statistiche[5]
+	rjs=[] 
+
+	for j in range(1, 40):
+		sum = 0
+		for risposta in risposte:
+			sum = sum + risposta
+		avg = float(sum/BATCHNUM)
+
+		cj = 0
+		for i in range(0, BATCHNUM-j):
+			cj = cj + (risposte[i]-avg)*(risposte[i+j]-avg)
+
+		cj = float(cj/(BATCHNUM-j))
+
+		c0 = 0
+		for risposta in risposte:
+			c0 = c0 + (risposta-avg)*(risposta-avg)
+	
+		c0 = float(c0/BATCHNUM)
+
+		rj = float(cj/c0)
+		print(rj)
+		rjs.append(rj)
+
+	plt.plot(rjs, color = 'r')
+	plt.ylabel("rj")
+	plt.xlabel("j")
+	plt.title("AUTOCORRELAZIONE")
+	plt.show()
+
+	return 0"""
 	
 	y = statistiche[0]
 	print(y)
@@ -254,7 +285,7 @@ def plotInfiniteHorizon(centro):
 	
 	
 REPLICATIONS = 128
-	
+SAMPLESIZE = 168	
 	
 
 def plotFiniteHorizon(centro):
