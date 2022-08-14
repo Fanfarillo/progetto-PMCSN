@@ -28,7 +28,7 @@ void errorMallocMain(int code) {
 
 }
 
-/*void errorVerify(int code) {
+void errorVerify(int code) {
 
 	printf("ERRORE: le statistiche di output della simulazione non sono consistenti.\n");
 	fflush(stdout);
@@ -36,7 +36,7 @@ void errorMallocMain(int code) {
 
 }
 
-void computeInterval(char *filename)
+/*void computeInterval(char *filename)
 {
 
   	long   n    = 0;                     
@@ -85,71 +85,50 @@ void computeInterval(char *filename)
     		printf("ERROR - insufficient data\n");
   		exit(-9000);
 	}
+}*/
+
+void finiteVerify(struct result_finite *ret) {
+
+	for(int replica=0; replica<REPLICATIONS; replica++) {
+		for(int center=0; center<CENTERS; center++) {
+			for(int samp=0; samp<STOP/SAMPLINGINTERVAL; samp++) {
+				if(ret->samplingTime[replica][center][2][samp] - (ret->samplingTime[replica][center][1][samp] + ret->numMedioServentiAttivi[replica][center][samp]*ret->samplingTime[replica][center][0][samp]) > 0.000001)
+					errorVerify(-2003);
+
+				if(ret->samplingTime[replica][center][5][samp] - (ret->samplingTime[replica][center][4][samp] + ret->samplingTime[replica][center][3][samp]) > 0.000001)
+					errorVerify(-2004);
+
+				if(ret->samplingTime[replica][center][0][samp] > 1 || ret->samplingTime[replica][center][0][samp] < 0 || ret->samplingTime[replica][center][10][samp] > 1 || ret->samplingTime[replica][center][10][samp] < 0) {
+					//printf("ERRORE - rho = %f\t replica = %d\t centro = %d\t samp = %d\n", ret->samplingTime[replica][center][0][samp], replica, center, samp);
+					errorVerify(-2005);
+				}
+
+			}
+		}
+	}
+
 }
 
-void verify(){
+void infiniteVerify(double ***siminf, int* m){
 
-	double rho_0 = a[0].service/t->current;
-	double q_0 = a[0].queue/t->current;
-	double n_0 = a[0].node/t->current;
-	if(n_0 - (q_0 + rho_0) > 0.000001)
-		errorVerify(-2000);
-		
-	double rho_1 = a[1].service/t->current;
-	double q_1 = a[1].queue/t->current;
-	double n_1 = a[1].node/t->current;
-	if(n_1 - (q_1 + rho_1) > 0.000001)
-		errorVerify(-2001);
-		
-	double rho_2 = a[2].service/t->current;
-	double q_2 = a[2].queue/t->current;
-	double n_2 = a[2].node/t->current;
-	if(n_2 - (q_2 + rho_2) > 0.000001)
-		errorVerify(-2002);
-		
-	double rho_3 = a[3].service/t->current;
-	double q_3 = a[3].queue/t->current;
-	double n_3 = a[3].node/t->current;
-	if(n_3 - (q_3 + rho_3) > 0.000001)
-		errorVerify(-2003);
-				
-	double rho_4 = a[4].service/t->current;
-	double q_4 = a[4].queue/t->current;
-	double n_4 = a[4].node/t->current;
-	if(n_4 - (q_4 + rho_4) > 0.000001)
-		errorVerify(-2004);	
-	
-	double s_0 = a[0].service/(al[0].index_a + al[0].index_f);
-	double tq_0 = a[0].queue/(al[0].index_a + al[0].index_f);
-	double ts_0 = a[0].node/(al[0].index_a + al[0].index_f);
-	if(ts_0 - (tq_0 + s_0) > 0.000001)
-		errorVerify(-2005);
-		
-	double s_1 = a[1].service/(al[1].index_a + al[1].index_f);
-	double tq_1 = a[1].queue/(al[1].index_a + al[1].index_f);
-	double ts_1 = a[1].node/(al[1].index_a + al[1].index_f);
-	if(ts_1 - (tq_1 + s_1) > 0.000001)
-		errorVerify(-2006);
-		
-	double s_2 = a[2].service/(al[2].index_a + al[2].index_f);
-	double tq_2 = a[2].queue/(al[2].index_a + al[2].index_f);
-	double ts_2 = a[2].node/(al[2].index_a + al[2].index_f);
-	if(ts_2 - (tq_2 + s_2) > 0.000001)
-		errorVerify(-2007);
-		
-	double s_3 = a[3].service/(al[3].index_a + al[3].index_f);
-	double tq_3 = a[3].queue/(al[3].index_a + al[3].index_f);
-	double ts_3 = a[3].node/(al[3].index_a + al[3].index_f);
-	if(ts_3 - (tq_3 + s_3) > 0.000001)
-		errorVerify(-2008);	
-		
-	double s_4 = a[4].service/(al[4].index_a + al[4].index_f);
-	double tq_4 = a[4].queue/(al[4].index_a + al[4].index_f);
-	double ts_4 = a[4].node/(al[4].index_a + al[4].index_f);
-	if(ts_4 - (tq_4 + s_4) > 0.000001)
-		errorVerify(-2009);
+	for(int center=0; center<CENTERS; center++) {
+		for(int batch=0; batch<K; batch++) {
+			if(siminf[center][2][batch] - (siminf[center][1][batch] + m[center]*siminf[center][0][batch]) > 0.000001)
+				errorVerify(-2000);
 
-}*/
+			if(siminf[center][5][batch] - (siminf[center][4][batch] + siminf[center][3][batch]) > 0.000001)
+				errorVerify(-2001);
+
+			if(siminf[center][0][batch] > 1 || siminf[center][0][batch] < 0 || siminf[center][10][batch] > 1 || siminf[center][10][batch] < 0) {
+				//printf("ERRORE - rho = %f\n", siminf[center][0][batch]);
+				errorVerify(-2002);
+			}
+
+		}
+
+	}
+
+}
 
 FILE** createStatisticFiles(){
 
@@ -260,7 +239,7 @@ int main(int argc, char **argv){
 	FILE **fps = createStatisticFiles();	
 	
 	//SIMULAZIONE A ORIZZONTE FINITO
-	double *****ret = finite_sim(array_m);
+	struct result_finite *ret = finite_sim(array_m);
 	
 	/*for(int replica=0;replica<REPLICATIONS;replica++)
 	{
@@ -273,7 +252,7 @@ int main(int argc, char **argv){
 				printf("-------------------------------------- INTERVALLO %d -----------------------------\n", interval);
 				for(int stat=0;stat<STATISTICS;stat++)
 				{
-					printf("%d: %f\n", stat, ret[0][replica][center][interval][stat]);
+					printf("%d: %f\n", stat, ret->nsim[replica][center][interval][stat]);
 					fflush(stdout);	
 				}
 			}
@@ -295,7 +274,7 @@ int main(int argc, char **argv){
 					if(stat_value==NULL)
 						errorMallocMain(-1004);
 
-					sprintf(stat_value, "%f;", ret[0][replica][center][interval][stat]);
+					sprintf(stat_value, "%f;", ret->nsim[replica][center][interval][stat]);
 					fputs(stat_value, fps[center]);
 					free(stat_value);
 				}
@@ -322,7 +301,7 @@ int main(int argc, char **argv){
 					if(stat_value==NULL)
 						errorMallocMain(-1005);
 
-					sprintf(stat_value, "%f;", ret[1][replica][center][stat][count]);
+					sprintf(stat_value, "%f;", ret->samplingTime[replica][center][stat][count]);
 					fputs(stat_value, fps[center+10]);
 					free(stat_value);
 				}
@@ -333,6 +312,8 @@ int main(int argc, char **argv){
 			
 		}
 	}
+
+	finiteVerify(ret);
 	
 	int interval = atoi(argv[1]);
 
@@ -391,11 +372,15 @@ int main(int argc, char **argv){
 		fclose(fps[i]);
 	}
 
+	infiniteVerify(siminf, array_m[interval-1]);
+
 	free(array_m);
 	free(fps);
 	free(ret);
 	free(siminf);
 
+	printf("FINISH\n");
+	fflush(stdout);
 	return 0;
 
 }

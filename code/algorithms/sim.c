@@ -612,7 +612,7 @@ void sampling(int interval, int replica, double ****nsim, int *m)
 	}
 }
 
-void samplingTimeFunction(int count, int replica, double ****samplingTime, int **array_m, int interval)
+void samplingTimeFunction(int count, int replica, double ****samplingTime, int **array_m, int interval, double ***numMedioServentiAttivi)
 {
 	double denominatore = 0.0;
 	double sizeInterval[6] = {7200.0, 3600.0, 10800.0, 10800.0, 14400.0, 3600.0};
@@ -643,12 +643,14 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 		for(int i=0;i<interval-1;i++){
 				denominatore += array_m[i][center]*sizeInterval[i];
 		}
-		denominatore += t->current - diff;
+		denominatore += (t->current - diff)*array_m[interval-1][center];
+		numMedioServentiAttivi[replica][center][count] = denominatore;
+
 		if(denominatore==0)
 			samplingTime[replica][center][0][count]=0;
 		else{			
 			samplingTime[replica][center][0][count]=aSampling[center].service/denominatore;		//UTILIZZAZIONE
-		printf("UTILIZZAZIONE:\treplica = %d\tcount = %d\tvalore = %f\tcentro = %d\tfascia = %f\n",replica, count, samplingTime[replica][center][0][count], center, interTime);fflush(stdout);
+			printf("UTILIZZAZIONE:\treplica = %d\tcount = %d\tvalore = %f\tcentro = %d\tfascia = %f\n",replica, count, samplingTime[replica][center][0][count], center, interTime);fflush(stdout);
 		}
 		
 		if(t->current==0)
@@ -767,7 +769,7 @@ void applyServersVariation(int *old_m, int *new_m, struct event_list *events, st
 	}	
 }
 
-void simulation(int **array_m, int replica, double**** nsim, double ****samplingTime)
+void simulation(int **array_m, int replica, double**** nsim, double ****samplingTime, double ***numMedioServentiAttivi)
 {
 	int *maxArray = getMaxArray(array_m);
 	int interval = 0;
@@ -850,7 +852,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 
 		else if(t->current == events->sampling){
 			printf("EVENTO: sampling temporale num %d.\n", count);
-			samplingTimeFunction(count, replica, samplingTime, array_m, interval);
+			samplingTimeFunction(count, replica, samplingTime, array_m, interval, numMedioServentiAttivi);
 			if(t->current + SAMPLINGINTERVAL <= STOP){
 				events->sampling += SAMPLINGINTERVAL;
 				count++;
@@ -987,13 +989,14 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 	
 }
 
-double***** finite_sim(int **array_m)
+struct result_finite *finite_sim(int **array_m)
 {
 	PlantSeeds(7000);	
 	
 	double ****nsim = (double ****) malloc(sizeof(double***)*REPLICATIONS);
-	double ****samplingTime = (double ****)malloc(sizeof(double ***)*REPLICATIONS);	
-	if(nsim==NULL || samplingTime==NULL)
+	double ****samplingTime = (double ****)malloc(sizeof(double ***)*REPLICATIONS);
+	double ***numMedioServentiAttivi = (double ***)malloc(sizeof(double **)*REPLICATIONS);
+	if(nsim==NULL || samplingTime==NULL || numMedioServentiAttivi==NULL)
 		errorMalloc(-1007);
 		
 	
@@ -1038,21 +1041,40 @@ double***** finite_sim(int **array_m)
 				errorMalloc(-1013);
 			}
 		}
+	}
+
+	for(int i=0; i<REPLICATIONS; i++)
+	{
+		numMedioServentiAttivi[i] = (double **)malloc(sizeof(double *)*CENTERS);
+		if(numMedioServentiAttivi[i]==NULL)
+			errorMalloc(-1042);
+
+		for(int j=0; j<CENTERS; j++)
+		{
+			numMedioServentiAttivi[i][j] = (double*)malloc(sizeof(double)*samplingSize);
+			if(numMedioServentiAttivi[i][j]==NULL)
+				errorMalloc(-1043);
+
+		}
 	}		
 	
 	//finite-horizon simulation
 	for(int i=0; i<REPLICATIONS; i++)
 	{
 		initialize(array_m);
-		simulation(array_m, i, nsim, samplingTime);
+		simulation(array_m, i, nsim, samplingTime, numMedioServentiAttivi);
 		deallocateDataStructures();
 
 	}	
 	//computeInterval();
 	
-	double *****ret = (double *****)malloc(sizeof(double *****)*2);
-	ret[0] = nsim;
-	ret[1] = samplingTime;
+	struct result_finite *ret = (struct result_finite *)malloc(sizeof(struct result_finite));
+	if(ret==NULL)
+		errorMalloc(-1044);
+
+	ret->nsim = nsim;
+	ret->samplingTime = samplingTime;
+	ret->numMedioServentiAttivi = numMedioServentiAttivi;
 	
 	return ret;
 }
@@ -1403,7 +1425,7 @@ double*** infinite_sim(int *m)
     			printf("INTERVALLO based upon %d data points", n);
     			printf(" INTERVALLO and with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
     			printf("INTERVALLO the expected value is in the interval");
-    			printf(" INTERVALLO %10.2f +/- %6.10f\n", mean[i][j], w[i][j]);
+    			printf(" INTERVALLO %10.6f +/- %6.6f\n", mean[i][j], w[i][j]);
 		}
 	}
 	

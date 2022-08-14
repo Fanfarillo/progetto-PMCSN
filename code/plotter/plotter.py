@@ -8,7 +8,7 @@ import numpy as npy
 #Se si cambia il file histogram.c potrebbe non funzionare correttamente
 #----------------------------------------------------------------------------------
 
-BATCHNUM = 64
+BATCHNUM = 128
 STATISTICS = 11
 
 def plotInfiniteHorizon(centro):
@@ -183,7 +183,7 @@ def plotInfiniteHorizon(centro):
 	print(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("rho")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("UTILIZZAZIONE")
 	plt.show()
 	
@@ -193,7 +193,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("Nq")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("NUMERO JOBS IN CODA")
 	plt.show()
 	
@@ -202,7 +202,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("Ns")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("NUMERO JOBS NEL CENTRO")
 	plt.show()
 	
@@ -211,7 +211,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("S")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("TEMPO DI SERVIZIO")
 	plt.show()
 	
@@ -220,7 +220,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("Tq")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("TEMPO DI ATTESA")
 	plt.show()
 	
@@ -228,8 +228,8 @@ def plotInfiniteHorizon(centro):
 	print(y)
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
-	plt.ylabel("Ns")
-	plt.xlabel("Tempo")
+	plt.ylabel("Ts")
+	plt.xlabel("Batch")
 	plt.title("TEMPO DI RISPOSTA")
 	plt.show()
 	
@@ -238,7 +238,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("r")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("INTERARRIVO")
 	plt.show()
 	
@@ -248,7 +248,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("F")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("ARRIVI FAMIGLIE")
 	plt.show()
 	
@@ -257,7 +257,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("A")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("ARRIVI AUTOMOBILI")
 	plt.show()
 	
@@ -266,7 +266,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("perdite")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("NUMERO DI PERDITE NEL SISTEMA")
 	plt.show()
 	
@@ -275,7 +275,7 @@ def plotInfiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("P(perdita)")
-	plt.xlabel("Tempo")
+	plt.xlabel("Batch")
 	plt.title("PROBABILITA' DI AVERE UNA PERDITA NEL SISTEMA")
 	plt.show()
 	
@@ -490,7 +490,7 @@ def plotFiniteHorizon(centro):
 	print(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("rho")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("UTILIZZAZIONE")
 	plt.show()
 	
@@ -500,7 +500,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("Nq")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("NUMERO JOBS IN CODA")
 	plt.show()
 	
@@ -509,7 +509,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("Ns")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("NUMERO JOBS NEL CENTRO")
 	plt.show()
 	
@@ -518,7 +518,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("S")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("TEMPO DI SERVIZIO")
 	plt.show()
 	
@@ -527,7 +527,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("Tq")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("TEMPO DI ATTESA")
 	plt.show()
 	
@@ -535,8 +535,8 @@ def plotFiniteHorizon(centro):
 	print(y)
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
-	plt.ylabel("Ns")
-	plt.xlabel("Tempo")
+	plt.ylabel("Ts")
+	plt.xlabel("Campione")
 	plt.title("TEMPO DI RISPOSTA")
 	plt.show()
 	
@@ -545,7 +545,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("r")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("INTERARRIVO")
 	plt.show()
 	
@@ -555,7 +555,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("F")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("ARRIVI FAMIGLIE")
 	plt.show()
 	
@@ -564,7 +564,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("A")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("ARRIVI AUTOMOBILI")
 	plt.show()
 	
@@ -573,7 +573,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("perdite")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("NUMERO DI PERDITE NEL SISTEMA")
 	plt.show()
 	
@@ -582,7 +582,7 @@ def plotFiniteHorizon(centro):
 	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.ylabel("P(perdita)")
-	plt.xlabel("Tempo")
+	plt.xlabel("Campione")
 	plt.title("PROBABILITA' DI AVERE UNA PERDITA NEL SISTEMA")
 	plt.show()
 		
@@ -596,8 +596,8 @@ def plotFiniteHorizon(centro):
 #plotFiniteHorizon(4)
 #plotFiniteHorizon(5)
 plotInfiniteHorizon(1)
-#plotInfiniteHorizon(2)
-#plotInfiniteHorizon(3)
-#plotInfiniteHorizon(4)
-#plotInfiniteHorizon(5)
+plotInfiniteHorizon(2)
+plotInfiniteHorizon(3)
+plotInfiniteHorizon(4)
+plotInfiniteHorizon(5)
 
