@@ -1410,7 +1410,7 @@ double*** infinite_sim(int *m)
 	}
 	
 	int n;
-	double u, t, stdv;;
+	double u, t, stdv;
 	
 	for(int j=0; j<STATISTICS; j++){
 		for(int i=0; i<CENTERS; i++)

@@ -18,7 +18,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define SAMPLING 1                         
+#define SAMPLING 1
+#define R 20.0
+#define COP 8.0
+#define CFOOD 8.0
+#define CE 1.0
+#define CT 5.0
+#define CPLAY 30.0
+#define T 30
+
 
 void errorMallocMain(int code) {
 
@@ -36,56 +44,141 @@ void errorVerify(int code) {
 
 }
 
-/*void computeInterval(char *filename)
+void computeInterval(struct result_finite *ret)
 {
 
-  	long   n    = 0;                     
-  	double sum  = 0.0;
-  	double mean = 0.0;
-  	double data;
-  	double stdev;
-  	double u, t, w;
-  	double diff;
+	double diffWelford;
 
-	FILE *fp = fopen(filename, "r");
-	if(fp==NULL)
-		exit(-1);
-	
-	double variate;
-	int ret;
-	
-	while((ret = fscanf(fp, "%lf", &variate))!=EOF)
+	double ***mean = (double ***)malloc(sizeof(double **)*CENTERS);
+	if(mean==NULL)
+		errorMallocMain(-1319);
+		
+	for(int i=0;i<CENTERS;i++)
 	{
-		if(ret != 1)
-			exit(-3);
-		n++;                                 
-    		diff  = variate - mean;
-    		printf("diff = %lf\n", diff);fflush(stdout);
-    		sum  += diff * diff * (n - 1.0) / n;
-    		printf("sum = %lf\n", sum);fflush(stdout);
-    		mean += diff / n;
-    		printf("mean = %lf\n", mean);fflush(stdout);
-		//printf("%lf\n", variate);
+		mean[i] = (double **)malloc(sizeof(double*)*INTERVALS);
+		if(mean[i]==NULL)
+			errorMallocMain(-1320);
+		for(int interval=0; interval<INTERVALS;interval++)
+		{
+			mean[i][interval] = (double *) malloc(sizeof(double) * STATISTICS);
+			if(mean[i][interval]==NULL)
+				errorMallocMain(-1321);
+		}
 	}
 	
-  	stdev  = sqrt(sum / n);
-  	printf("stdev = %lf\n", stdev);fflush(stdout);
-
-  	if (n > 1) {
-    		u = 1.0 - 0.5 * (1.0 - LOC);              
-    		t = idfStudent(n - 1, u);                 
-    		printf("Valore critico: %lf\n", t);
-    		w = t * stdev / sqrt(n - 1);              
-    		printf("\nbased upon %ld data points", n);
-    		printf(" and with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
-    		printf("the expected value is in the interval");
-    		printf("%10.2f +/- %6.2f\n", mean, w);
-  	}
-  	else{
-    		printf("ERROR - insufficient data\n");
-  		exit(-9000);
+	double ***sum = (double ***)malloc(sizeof(double **)*CENTERS);
+	if(sum==NULL)
+		errorMallocMain(-1319);
+		
+	for(int i=0;i<CENTERS;i++)
+	{
+		sum[i] = (double **)malloc(sizeof(double*)*INTERVALS);
+		if(sum[i]==NULL)
+			errorMallocMain(-1320);
+		for(int interval=0; interval<INTERVALS;interval++)
+		{
+			sum[i][interval] = (double *) malloc(sizeof(double) * STATISTICS);
+			if(sum[i][interval]==NULL)
+				errorMallocMain(-1321);
+		}
 	}
-}*/
+	
+	double ***w = (double ***)malloc(sizeof(double **)*CENTERS);
+	if(w==NULL)
+		errorMallocMain(-1319);
+		
+	for(int i=0;i<CENTERS;i++)
+	{
+		w[i] = (double **)malloc(sizeof(double*)*INTERVALS);
+		if(w[i]==NULL)
+			errorMallocMain(-1320);
+		for(int interval=0; interval<INTERVALS;interval++)
+		{
+			w[i][interval] = (double *) malloc(sizeof(double) * STATISTICS);
+			if(w[i][interval]==NULL)
+				errorMallocMain(-1321);
+		}
+	}
+	
+	
+	
+	for(int centro=0; centro<CENTERS; centro++)
+	{
+		for(int intervallo = 0; intervallo < INTERVALS; intervallo++)
+		{
+			for(int stat=0;stat<STATISTICS;stat++)
+			{
+				for(int replica=0;replica<REPLICATIONS;replica++)
+				{
+					diffWelford= ret->nsim[replica][centro][intervallo][stat] - mean[centro][intervallo][stat];
+					sum[centro][intervallo][stat] += diffWelford * diffWelford * ((replica+1) - 1.0) / (replica+1);
+					mean[centro][intervallo][stat] += diffWelford / (replica+1);
+				}
+			}
+		}
+	}
+	
+	int r=REPLICATIONS;
+	double u, t, stdv;
+	
+	for(int centro=0;centro<CENTERS;centro++)
+	{
+		for(int interval=0; interval<INTERVALS;interval++)
+		{
+			for(int stat=0; stat<STATISTICS;stat++)
+			{
+				stdv = sqrt(sum[centro][interval][stat] / r);
+				u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */
+    				t = idfStudent(r - 1, u);                 /* critical value of t */
+    				w[centro][interval][stat] = t * stdv / sqrt(r - 1);         /* interval half width */
+    				printf("\nINTERVALLO FINITO statistica %d\tfascia %d\tcentro %d\n",stat, interval, centro);
+    				printf("INTERVALLO FINITO based upon %d data points", r);
+    				printf(" INTERVALLO FINITO and with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
+    				printf("INTERVALLO FINITO the expected value is in the interval");
+    				printf("INTERVALLO FINITO %10.6f +/- %6.6f\n", mean[centro][interval][stat], w[centro][interval][stat]);
+			}
+		}
+	}
+
+
+}
+
+void computeGain(struct result_finite *ret, int **array_m)
+{
+	int last = STOP/SAMPLINGINTERVAL;
+	double sum = 0.0;
+	
+	for(int replica = 0; replica<REPLICATIONS;replica++)
+	{
+		//Numero di jobs che hanno partecipato al guadagno del ristorante
+		sum += (ret->samplingTime[replica][2][7][last-1] + ret->samplingTime[replica][2][8][last-1]);
+	}
+	
+	double jobs = sum/REPLICATIONS;
+	
+	double array_fascia[6] = {2.0, 1.0, 3.0, 3.0, 4.0, 1.0};
+	double cop = 0.0;
+	double cfood = 0.0;
+	double ce = 0.0;
+	double ct = 0.0;
+	double cplay = 0.0;
+	for(int fascia = 0; fascia<6; fascia++)
+	{
+		cop += array_m[fascia][0] * COP * array_fascia[fascia];
+		ce += array_m[fascia][1] * CE * array_fascia[fascia];
+		cfood += array_m[fascia][2] * CFOOD * array_fascia[fascia];
+	}
+	
+	ct = array_m[0][3] * CT;
+	cplay = array_m[0][4] * CPLAY;
+	
+	double gain = (jobs * T) * R - (cop + ce + cfood)*T - ct - cplay;
+	
+	printf("GAIN: %f\n", gain);
+	fflush(stdout);
+	
+	
+}
 
 void finiteVerify(struct result_finite *ret) {
 
@@ -259,6 +352,8 @@ int main(int argc, char **argv){
 		}
 	}*/
 	
+	finiteVerify(ret);
+	
 	char *stat_value;
 	FILE *fp = NULL;
 
@@ -313,7 +408,9 @@ int main(int argc, char **argv){
 		}
 	}
 
-	finiteVerify(ret);
+	computeInterval(ret);
+	
+	computeGain(ret, array_m);
 	
 	int interval = atoi(argv[1]);
 
@@ -373,6 +470,8 @@ int main(int argc, char **argv){
 	}
 
 	infiniteVerify(siminf, array_m[interval-1]);
+	
+	
 
 	free(array_m);
 	free(fps);
