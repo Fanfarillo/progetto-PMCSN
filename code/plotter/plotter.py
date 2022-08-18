@@ -590,14 +590,13 @@ def plotFiniteHorizon(centro):
 	
 	
 
-#plotFiniteHorizon(1)
-#plotFiniteHorizon(2)
-#plotFiniteHorizon(3)
-#plotFiniteHorizon(4)
-#plotFiniteHorizon(5)
+plotFiniteHorizon(1)
+plotFiniteHorizon(2)
+plotFiniteHorizon(3)
+plotFiniteHorizon(4)
+plotFiniteHorizon(5)
 #plotInfiniteHorizon(1)
 #plotInfiniteHorizon(2)
-plotInfiniteHorizon(3)
-plotInfiniteHorizon(4)
+#plotInfiniteHorizon(3)
+#plotInfiniteHorizon(4)
 #plotInfiniteHorizon(5)
-

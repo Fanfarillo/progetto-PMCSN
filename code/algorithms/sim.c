@@ -598,24 +598,58 @@ void sampling(int interval, int replica, double ****nsim, int *m)
 	
 	for(int center=0;center<CENTERS;center++)
 	{
-		nsim[replica][center][interval-1][0]=a[center].service/((t->current-diff) * m[center]);		//UTILIZZAZIONE
-		nsim[replica][center][interval-1][1]=a[center].queue/(t->current-diff);		//POPOLAZIONE MEDIA IN CODA
-		nsim[replica][center][interval-1][2]=a[center].node/(t->current-diff);		//POPOLAZIONE MEDIA NEL CENTRO
-		nsim[replica][center][interval-1][3]=a[center].service/(((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f)));		//TEMPO MEDIO DI SERVIZIO
-		nsim[replica][center][interval-1][4]=a[center].queue/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));		//TEMPO MEDIO DI ATTESA
-		nsim[replica][center][interval-1][5]=a[center].node/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));		//TEMPO MEDIO DI RISPOSTA
-		nsim[replica][center][interval-1][6]=(t->last[center]-diff)/((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f));	//TEMPO MEDIO DI INTERARRIVO
+		if((t->current-diff) * m[center] == 0)
+			nsim[replica][center][interval-1][0] = 0;
+		else
+			nsim[replica][center][interval-1][0]=a[center].service/((t->current-diff) * m[center]);		//UTILIZZAZIONE
+		
+		if(t->current-diff==0)
+			nsim[replica][center][interval-1][1] = 0;
+		else
+			nsim[replica][center][interval-1][1]=a[center].queue/(t->current-diff);		//POPOLAZIONE MEDIA IN CODA
+
+		if(t->current-diff==0)
+			nsim[replica][center][interval-1][2] = 0;
+		else
+			nsim[replica][center][interval-1][2]=a[center].node/(t->current-diff);		//POPOLAZIONE MEDIA NEL CENTRO
+
+		if(((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f))==0)
+			nsim[replica][center][interval-1][3] = 0;
+		else
+			nsim[replica][center][interval-1][3]=a[center].service/(((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f)));		//TEMPO MEDIO DI SERVIZIO
+		
+		if(((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f))==0)
+			nsim[replica][center][interval-1][4] = 0;
+		else
+			nsim[replica][center][interval-1][4]=a[center].queue/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));		//TEMPO MEDIO DI ATTESA
+		
+		if(((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f))==0)
+			nsim[replica][center][interval-1][5] = 0;
+		else
+			nsim[replica][center][interval-1][5]=a[center].node/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));		//TEMPO MEDIO DI RISPOSTA
+		
+		if((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f)==0)
+			nsim[replica][center][interval-1][6] = (double) INFINITY;
+		else
+			nsim[replica][center][interval-1][6]=(t->last[center]-diff)/((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f));	//TEMPO MEDIO DI INTERARRIVO
+		
 		nsim[replica][center][interval-1][7]=(double)(al[center].index_f-al[center].prev_index_f);		//NUMERO DI ARRIVI DELLE FAMIGLIE
 		nsim[replica][center][interval-1][8]=(double)(al[center].index_a-al[center].prev_index_a);		//NUMERO DI ARRIVI DELLE AUTOMOBILI
 		nsim[replica][center][interval-1][9]=(double)(al[center].numLoss_f-al[center].prev_numLoss_f);	//NUMERO DI PERDITE
-		nsim[replica][center][interval-1][10]=(double)(al[center].numLoss_f-al[center].prev_numLoss_f)/(double)(al[center].index_f-al[center].prev_index_f);	//PROBABILITA' DI AVERE UNA PERDITA	
+
+		if((al[center].index_f-al[center].prev_index_f)+(al[center].prev_index_f-al[center].prev_compl_f-al[center].prev_numLoss_f)==0)
+			nsim[replica][center][interval-1][10] = 0;
+		else
+			nsim[replica][center][interval-1][10]=(double)(al[center].numLoss_f-al[center].prev_numLoss_f)/
+				(double)((al[center].index_f-al[center].prev_index_f)+(al[center].prev_index_f-al[center].prev_compl_f-al[center].prev_numLoss_f));	//PROBABILITA' DI AVERE UNA PERDITA	
+	
 	}
 }
 
 void samplingTimeFunction(int count, int replica, double ****samplingTime, int **array_m, int interval, double ***numMedioServentiAttivi)
 {
 	double denominatore = 0.0;
-	double sizeInterval[6] = {7200.0, 3600.0, 10800.0, 10800.0, 14400.0, 3600.0};
+	double sizeInterval[INTERVALS] = {7200.0, 3600.0, 10800.0, 10800.0, 14400.0, 3600.0};
 	double diff;
 	
 	switch(interval){		
@@ -648,10 +682,8 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 
 		if(denominatore==0)
 			samplingTime[replica][center][0][count]=0;
-		else{			
+		else	
 			samplingTime[replica][center][0][count]=aSampling[center].service/denominatore;		//UTILIZZAZIONE
-			printf("UTILIZZAZIONE:\treplica = %d\tcount = %d\tvalore = %f\tcentro = %d\tfascia = %f\n",replica, count, samplingTime[replica][center][0][count], center, interTime);fflush(stdout);
-		}
 		
 		if(t->current==0)
 			samplingTime[replica][center][1][count]=0;
@@ -679,7 +711,7 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 			samplingTime[replica][center][5][count]=aSampling[center].node/(al[center].compl_a + al[center].compl_f);		//TEMPO MEDIO DI RISPOSTA
 		
 		if((al[center].index_a + al[center].index_f)==0)
-			samplingTime[replica][center][6][count]=0;
+			samplingTime[replica][center][6][count]=(double) INFINITY;
 		else
 			samplingTime[replica][center][6][count]=t->last[center]/(al[center].index_a + al[center].index_f);				//TEMPO MEDIO DI INTERARRIVO
 		
@@ -791,7 +823,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		struct next_completion *nextCom5 = getMinCompletion(maxArray[4], sv2[2].x, 5);
 
 		if(t->current == events->changeInterval){
-			printf("EVENTO: cambio intervallo.\n");
+			//printf("EVENTO: cambio intervallo.\n");
 			if(interval!=0)
 			{
 				sampling(interval, replica, nsim, m);
@@ -811,47 +843,41 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 			if(events->changeInterval==0.0){			
 				interTime = 180.0;
 				events->changeInterval = 7200.0;
-				printf("AAAA\n");fflush(stdout);
 			}
 			else if(events->changeInterval==7200.0){			
 				interTime = 480.0;
 				events->changeInterval = 10800.0;
 				m = array_m[1];
 				applyServersVariation(array_m[0], m, events, t, sv1, sv2);
-				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==10800.0){
 				interTime = 60.0;
 				events->changeInterval = 21600.0;
 				m = array_m[2];
 				applyServersVariation(array_m[1], m, events, t, sv1, sv2);
-				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==21600.0){
 				interTime = 300.0;
 				events->changeInterval = 32400.0;
 				m = array_m[3];
 				applyServersVariation(array_m[2], m, events, t, sv1, sv2);
-				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==32400.0){
 				interTime = 30.0;
 				events->changeInterval = 46800.0;
 				m = array_m[4];
 				applyServersVariation(array_m[3], m, events, t, sv1, sv2);
-				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 			else if(events->changeInterval==46800.0){
 				interTime = 180.0;
 				events->changeInterval = (double) INFINITY;
 				m = array_m[5];
 				applyServersVariation(array_m[4], m, events, t, sv1, sv2);
-				printf("AAAA\t%d\n", m[2]);fflush(stdout);
 			}
 		}
 
 		else if(t->current == events->sampling){
-			printf("EVENTO: sampling temporale num %d.\n", count);
+			//printf("EVENTO: sampling temporale num %d.\n", count);
 			samplingTimeFunction(count, replica, samplingTime, array_m, interval, numMedioServentiAttivi);
 			if(t->current + SAMPLINGINTERVAL <= STOP){
 				events->sampling += SAMPLINGINTERVAL;
@@ -862,67 +888,67 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		}
 
 		else if(t->current == events->carArr1.carArrivalTime) {
-			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
+			//printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
 			carArrival1(events, t, &sv1[0], &al[0], maxArray[0], true);
 		}
 		else if(t->current == events->familyArr1.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
 			familyArrival1(events, t, &sv1[0], &al[0], maxArray[0], true);
 		}
 		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
-			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
+			//printf("EVENTO: partenza di un'automobile dal centro 1.\n");
 			carDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0], &al[0]);	//Qui m[0] al posto di maxArray[0] è giusto
 		}
 		else if(t->current == nextCom1->completionTime && nextCom1->isFamily) {
-			printf("EVENTO: partenza di una famiglia dal centro 1.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 1.\n");
 			familyDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, maxArray[0], &al[0]);
 		}
 		else if(t->current == nextAb1->abandonTime) {
-			printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
+			//printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
 			abandon1(events, &sv1[0], &al[0], nextAb1->jobId);
 		}
 		else if(t->current == events->familyArr2.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
 			arrival2(events, t, &sv2[0], &al[1], maxArray[1], true);
 		}
 		else if(t->current == nextCom2->completionTime) {
-			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 2.\n");
 			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1], &al[1]);	//Qui m[1] al posto di maxArray[1] è giusto
 		}
 		else if(t->current == nextAb2->abandonTime) {
-			printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
+			//printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
 			abandon2(events, &sv2[0], &al[1], nextAb2->jobId);
 		}
 		else if(t->current == events->carArr3.carArrivalTime) {
-			printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
+			//printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
 			carArrival3(events, t, &sv1[1], &al[2], arr, maxArray[2]);
 		}
 		else if(t->current == events->familyArr3.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
 			familyArrival3(events, t, &sv1[1], &al[2], arr, maxArray[2]);
 		}
 		else if(t->current == nextCom3->completionTime && !nextCom3->isFamily) {
-			printf("EVENTO: partenza di un'automobile dal centro 3.\n");
+			//printf("EVENTO: partenza di un'automobile dal centro 3.\n");
 			carDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2], &al[2]);	//Qui m[2] al posto di maxArray[2] è giusto
 		}
 		else if(t->current == nextCom3->completionTime && nextCom3->isFamily) {
-			printf("EVENTO: partenza di una famiglia dal centro 3.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 3.\n");
 			familyDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, maxArray[2], &al[2]);
 		}
 		else if(t->current == events->familyArr4.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
 			arrival4(events, t, &sv2[1], &al[3], arr, maxArray[3]);
 		}
 		else if(t->current == nextCom4->completionTime) {
-			printf("EVENTO: partenza di una famiglia dal centro 4.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 4.\n");
 			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3], &al[3]);	//Qui m[3] al posto di maxArray[3] è giusto
 		}
 		else if(t->current == events->familyArr5.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
 			arrival5(events, t, &sv2[2], &al[4], arr, maxArray[4]);
 		}
 		else if(t->current == nextCom5->completionTime) {
-			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 5.\n");
 			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
 		}
 
@@ -1066,7 +1092,6 @@ struct result_finite *finite_sim(int **array_m)
 		deallocateDataStructures();
 
 	}	
-	//computeInterval();
 	
 	struct result_finite *ret = (struct result_finite *)malloc(sizeof(struct result_finite));
 	if(ret==NULL)
@@ -1077,6 +1102,7 @@ struct result_finite *finite_sim(int **array_m)
 	ret->numMedioServentiAttivi = numMedioServentiAttivi;
 	
 	return ret;
+
 }
 
 void samplingBatch(int centerIndex, int *count, double ***siminf, double **sum, double **mean, double diff, int *m)
@@ -1202,8 +1228,7 @@ double*** infinite_sim(int *m)
 
 		
 		if(t->current == events->carArr1.carArrivalTime) {
-			printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
-			printf("CLOCK: %f\n", t->current);fflush(stdout);
+			//printf("EVENTO: arrivo di un'automobile nel centro 1.\n");
 			carArrival1(events, t, &sv1[0], &al[0], m[0], false);
 			if(count[0] < B * K){
 				count[0]+=1;
@@ -1216,7 +1241,7 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == events->familyArr1.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 1.\n");
 			familyArrival1(events, t, &sv1[0], &al[0], m[0], false);
 			if(count[0] < B * K){
 				count[0]+=1;
@@ -1229,19 +1254,19 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == nextCom1->completionTime && !nextCom1->isFamily) {
-			printf("EVENTO: partenza di un'automobile dal centro 1.\n");
+			//printf("EVENTO: partenza di un'automobile dal centro 1.\n");
 			carDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0], &al[0]);
 		}
 		else if(t->current == nextCom1->completionTime && nextCom1->isFamily) {
-			printf("EVENTO: partenza di una famiglia dal centro 1.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 1.\n");
 			familyDeparture1(events, t, &sv1[0], arr, nextCom1->serverOffset, m[0], &al[0]);
 		}
 		else if(t->current == nextAb1->abandonTime) {
-			printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
+			//printf("EVENTO: abbandono di una famiglia dal centro 1.\n");
 			abandon1(events, &sv1[0], &al[0], nextAb1->jobId);
 		}
 		else if(t->current == events->familyArr2.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
 			arrival2(events, t, &sv2[0], &al[1], m[1], false);
 			if(count[1] < B * K){
 				count[1]+=1;			
@@ -1254,15 +1279,15 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == nextCom2->completionTime) {
-			printf("EVENTO: partenza di una famiglia dal centro 2.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 2.\n");
 			departure2(events, t, &sv2[0], arr, nextCom2->serverOffset, m[1], &al[1]);	//Qui m[1] al posto di maxArray[1] è giusto
 		}
 		else if(t->current == nextAb2->abandonTime) {
-			printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
+			//printf("EVENTO: abbandono di una famiglia dal centro 2.\n");
 			abandon2(events, &sv2[0], &al[1], nextAb2->jobId);
 		}
 		else if(t->current == events->carArr3.carArrivalTime) {
-			printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
+			//printf("EVENTO: arrivo di un'automobile nel centro 3.\n");
 			carArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
 			if(count[2] < B * K){
 				count[2]+=1;
@@ -1275,7 +1300,7 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == events->familyArr3.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 3.\n");
 			familyArrival3(events, t, &sv1[1], &al[2], arr, m[2]);
 			if(count[2] < B * K){
 				count[2]+=1;
@@ -1288,15 +1313,15 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == nextCom3->completionTime && !nextCom3->isFamily) {
-			printf("EVENTO: partenza di un'automobile dal centro 3.\n");
+			//printf("EVENTO: partenza di un'automobile dal centro 3.\n");
 			carDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2], &al[2]);
 		}
 		else if(t->current == nextCom3->completionTime && nextCom3->isFamily) {
-			printf("EVENTO: partenza di una famiglia dal centro 3.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 3.\n");
 			familyDeparture3(events, t, &sv1[1], arr, nextCom3->serverOffset, m[2], &al[2]);
 		}
 		else if(t->current == events->familyArr4.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 4.\n");
 			arrival4(events, t, &sv2[1], &al[3], arr, m[3]);
 			if(count[3] < B * K){
 				count[3]+=1;
@@ -1309,11 +1334,11 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == nextCom4->completionTime) {
-			printf("EVENTO: partenza di una famiglia dal centro 4.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 4.\n");
 			departure4(events, t, &sv2[1], arr, nextCom4->serverOffset, m[3], &al[3]);	//Qui m[3] al posto di maxArray[3] è giusto
 		}
 		else if(t->current == events->familyArr5.familyArrivalTime) {
-			printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
+			//printf("EVENTO: arrivo di una famiglia nel centro 5.\n");
 			arrival5(events, t, &sv2[2], &al[4], arr, m[4]);
 			if(count[4] < B * K){
 				count[4]+=1;
@@ -1326,7 +1351,7 @@ double*** infinite_sim(int *m)
 			}
 		}
 		else if(t->current == nextCom5->completionTime) {
-			printf("EVENTO: partenza di una famiglia dal centro 5.\n");
+			//printf("EVENTO: partenza di una famiglia dal centro 5.\n");
 			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
 		}
 
@@ -1388,16 +1413,6 @@ double*** infinite_sim(int *m)
 		free(nextCom5);						
 			
 	}
-
-	/*
-	double **stdv = (double **)malloc(sizeof(double*)*CENTERS);
-	if(stdv==NULL)
-		errorMalloc(9004);
-	for(int j=0;j<STATISTICS;j++){
-		stdv[j]=(double *)malloc(sizeof(double))
-		if(stdv[j]==NULL)
-			errorMalloc(9004);
-	}*/
 	
 	double **w = (double **)malloc(sizeof(double*)*CENTERS);
 	if(w==NULL)
@@ -1412,8 +1427,8 @@ double*** infinite_sim(int *m)
 	int n;
 	double u, t, stdv;
 	
-	for(int j=0; j<STATISTICS; j++){
-		for(int i=0; i<CENTERS; i++)
+	for(int i=0; i<CENTERS; i++){
+		for(int j=0; j<STATISTICS; j++)
 		{
 			n = count[i]/B;
 			stdv = sqrt(sum[i][j] / n);			
@@ -1421,11 +1436,7 @@ double*** infinite_sim(int *m)
     			t = idfStudent(n - 1, u);                 /* critical value of t */
     			w[i][j] = t * stdv / sqrt(n - 1);         /* interval half width */
 
-    			printf("\nINTERVALLO statistica %d\tcentro %d\n",j,i);
-    			printf("INTERVALLO based upon %d data points", n);
-    			printf(" INTERVALLO and with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
-    			printf("INTERVALLO the expected value is in the interval");
-    			printf(" INTERVALLO %10.6f +/- %6.6f\n", mean[i][j], w[i][j]);
+    			printf("INTERVALLO-INFINITO-statistica-%d-centro%d ------ %10.6f +/- %6.6f\n", j, i, mean[i][j], w[i][j]);
 		}
 	}
 	

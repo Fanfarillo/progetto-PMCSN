@@ -100,8 +100,6 @@ void computeInterval(struct result_finite *ret)
 		}
 	}
 	
-	
-	
 	for(int centro=0; centro<CENTERS; centro++)
 	{
 		for(int intervallo = 0; intervallo < INTERVALS; intervallo++)
@@ -128,18 +126,17 @@ void computeInterval(struct result_finite *ret)
 			for(int stat=0; stat<STATISTICS;stat++)
 			{
 				stdv = sqrt(sum[centro][interval][stat] / r);
-				u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */
-    				t = idfStudent(r - 1, u);                 /* critical value of t */
+				u = 1.0 - 0.5 * (1.0 - LOC);              						/* interval parameter  */
+    				t = idfStudent(r - 1, u);                 					/* critical value of t */
     				w[centro][interval][stat] = t * stdv / sqrt(r - 1);         /* interval half width */
-    				printf("\nINTERVALLO FINITO statistica %d\tfascia %d\tcentro %d\n",stat, interval, centro);
-    				printf("INTERVALLO FINITO based upon %d data points", r);
-    				printf(" INTERVALLO FINITO and with %d%% confidence\n", (int) (100.0 * LOC + 0.5));
-    				printf("INTERVALLO FINITO the expected value is in the interval");
-    				printf("INTERVALLO FINITO %10.6f +/- %6.6f\n", mean[centro][interval][stat], w[centro][interval][stat]);
+    				
+					printf("INTERVALLO-FINITO-statistica-%d-centro-%d-fascia-%d ------ %10.6f +/- %6.6f\n", stat, centro, interval, mean[centro][interval][stat], w[centro][interval][stat]);
+			
 			}
+		
 		}
+	
 	}
-
 
 }
 
@@ -162,6 +159,7 @@ void computeGain(struct result_finite *ret, int **array_m)
 	double ce = 0.0;
 	double ct = 0.0;
 	double cplay = 0.0;
+
 	for(int fascia = 0; fascia<6; fascia++)
 	{
 		cop += array_m[fascia][0] * COP * array_fascia[fascia];
@@ -172,11 +170,10 @@ void computeGain(struct result_finite *ret, int **array_m)
 	ct = array_m[0][3] * CT;
 	cplay = array_m[0][4] * CPLAY;
 	
-	double gain = (jobs * T) * R - (cop + ce + cfood)*T - ct - cplay;
+	double gain = (jobs * T) * R - (cop + ce + cfood) * T - ct - cplay;
 	
 	printf("GAIN: %f\n", gain);
 	fflush(stdout);
-	
 	
 }
 
@@ -305,7 +302,7 @@ int main(int argc, char **argv){
 
 	FILE *fp_config = fopen("properties.conf", "r");
 	if(fp_config==NULL) {
-		printf("ERRORE: impossibile creare il file properties.conf.\n");
+		printf("ERRORE: impossibile aprire il file properties.conf.\n");
 		fflush(stdout);
 		exit(-2);
 	}
@@ -333,6 +330,7 @@ int main(int argc, char **argv){
 	
 	//SIMULAZIONE A ORIZZONTE FINITO
 	struct result_finite *ret = finite_sim(array_m);
+	finiteVerify(ret);
 	
 	/*for(int replica=0;replica<REPLICATIONS;replica++)
 	{
@@ -352,11 +350,10 @@ int main(int argc, char **argv){
 		}
 	}*/
 	
-	finiteVerify(ret);
-	
 	char *stat_value;
 	FILE *fp = NULL;
 
+	//SCRITTURA SUI FILE ./data/finite/servicenode.dat
 	for(int center=0; center<CENTERS; center++){
 		fp = fps[center];
 		for(int replica=0; replica<REPLICATIONS;replica++)
@@ -370,19 +367,20 @@ int main(int argc, char **argv){
 						errorMallocMain(-1004);
 
 					sprintf(stat_value, "%f;", ret->nsim[replica][center][interval][stat]);
-					fputs(stat_value, fps[center]);
+					fputs(stat_value, fp);
 					free(stat_value);
 				}
-				fputs("\n", fps[center]);
+				fputs("\n", fp);
 				
 			}
-			fputs("\n", fps[center]);
+			fputs("\n", fp);
 			
 		}
 	}
 	
 	int n = STOP/SAMPLINGINTERVAL;
 	
+	//SCRITTURA SUI FILE ./data/finite/servicenodesampling.dat
 	for(int center=0; center<CENTERS; center++){
 		fp = fps[center+10];
 
@@ -397,20 +395,19 @@ int main(int argc, char **argv){
 						errorMallocMain(-1005);
 
 					sprintf(stat_value, "%f;", ret->samplingTime[replica][center][stat][count]);
-					fputs(stat_value, fps[center+10]);
+					fputs(stat_value, fp);
 					free(stat_value);
 				}
-				fputs("\n", fps[center+10]);
+				fputs("\n", fp);
 				
 			}							
-			fputs("\n", fps[center+10]);
+			fputs("\n", fp);
 			
 		}
 	}
 
-	computeInterval(ret);
-	
-	computeGain(ret, array_m);
+	computeInterval(ret);	//Funzione che calcola gli intervalli di confidenza delle statistiche di output per tutte le fasce orarie relativamente alla simulazione a orizzonte finito
+	computeGain(ret, array_m);	//Funzione che calcola il profitto (mensile) del sistema
 	
 	int interval = atoi(argv[1]);
 
@@ -441,7 +438,9 @@ int main(int argc, char **argv){
 	
 	//SIMULAZIONE A ORIZZONTE INFINITO
 	double ***siminf = infinite_sim(array_m[interval-1]);
+	infiniteVerify(siminf, array_m[interval-1]);
 	
+	//SCRITTURA SUI FILE ./data/infinite/servicenode.dat
 	for(int center=0; center<CENTERS; center++){
 		fp = fps[center+5];
 
@@ -454,13 +453,13 @@ int main(int argc, char **argv){
 					errorMallocMain(-1006);
 
 				sprintf(stat_value, "%f;", siminf[center][stat][batch]);
-				fputs(stat_value, fps[center+5]);
+				fputs(stat_value, fp);
 				free(stat_value);
 			
-				fputs("\n", fps[center+5]);
+				fputs("\n", fp);
 				
 			}
-			fputs("\n", fps[center+5]);
+			fputs("\n", fp);
 			
 		}
 	}
@@ -468,11 +467,7 @@ int main(int argc, char **argv){
 	for(int i=0; i<15; i++){
 		fclose(fps[i]);
 	}
-
-	infiniteVerify(siminf, array_m[interval-1]);
 	
-	
-
 	free(array_m);
 	free(fps);
 	free(ret);
