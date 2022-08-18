@@ -82,6 +82,9 @@ void deallocateDataStructures() {
 void initializeEventList(int *m, bool simType) {
 	//m is maxArray
 
+	if(simType)
+		interTime = 180.0;
+
 	if(P_CAR==0) {
 		events->carArr1.carArrivalTime = (double) INFINITY;
 		events->carArr1.isCarArrivalActive = false;
@@ -629,7 +632,7 @@ void sampling(int interval, int replica, double ****nsim, int *m)
 			nsim[replica][center][interval-1][5]=a[center].node/((al[center].compl_a-al[center].prev_compl_a) + (al[center].compl_f-al[center].prev_compl_f));		//TEMPO MEDIO DI RISPOSTA
 		
 		if((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f)==0)
-			nsim[replica][center][interval-1][6] = (double) INFINITY;
+			nsim[replica][center][interval-1][6] = 0;
 		else
 			nsim[replica][center][interval-1][6]=(t->last[center]-diff)/((al[center].index_a-al[center].prev_index_a) + (al[center].index_f-al[center].prev_index_f));	//TEMPO MEDIO DI INTERARRIVO
 		
@@ -711,7 +714,7 @@ void samplingTimeFunction(int count, int replica, double ****samplingTime, int *
 			samplingTime[replica][center][5][count]=aSampling[center].node/(al[center].compl_a + al[center].compl_f);		//TEMPO MEDIO DI RISPOSTA
 		
 		if((al[center].index_a + al[center].index_f)==0)
-			samplingTime[replica][center][6][count]=(double) INFINITY;
+			samplingTime[replica][center][6][count]=0;
 		else
 			samplingTime[replica][center][6][count]=t->last[center]/(al[center].index_a + al[center].index_f);				//TEMPO MEDIO DI INTERARRIVO
 		
@@ -909,7 +912,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 		}
 		else if(t->current == events->familyArr2.familyArrivalTime) {
 			//printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
-			arrival2(events, t, &sv2[0], &al[1], maxArray[1], true);
+			arrival2(events, t, &sv2[0], &al[1], maxArray[1], m[1], true);
 		}
 		else if(t->current == nextCom2->completionTime) {
 			//printf("EVENTO: partenza di una famiglia dal centro 2.\n");
@@ -952,7 +955,7 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
 		}
 
-		/*if(t->current < 50000.0) {
+		/*if(z) {
 			printf("Clock: %f\n", t->current);
 
 			printf("qA centro 1: %d\n", sv1[0].qA);
@@ -1267,7 +1270,7 @@ double*** infinite_sim(int *m)
 		}
 		else if(t->current == events->familyArr2.familyArrivalTime) {
 			//printf("EVENTO: arrivo di una famiglia nel centro 2.\n");
-			arrival2(events, t, &sv2[0], &al[1], m[1], false);
+			arrival2(events, t, &sv2[0], &al[1], m[1], m[1], false);
 			if(count[1] < B * K){
 				count[1]+=1;			
 				if(count[1]%B==0)
@@ -1436,7 +1439,7 @@ double*** infinite_sim(int *m)
     			t = idfStudent(n - 1, u);                 /* critical value of t */
     			w[i][j] = t * stdv / sqrt(n - 1);         /* interval half width */
 
-    			printf("INTERVALLO-INFINITO-statistica-%d-centro%d ------ %10.6f +/- %6.6f\n", j, i, mean[i][j], w[i][j]);
+    			printf("INTERVALLO-INFINITO-statistica-%d-centro-%d ------ %10.6f +/- %6.6f\n", j, i, mean[i][j], w[i][j]);
 		}
 	}
 	

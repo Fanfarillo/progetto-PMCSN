@@ -17,7 +17,7 @@ int getIdleOffset2(int len, struct state_variables2 *svPtr) {
 
 }
 
-void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len, bool simType){
+void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_variables2 *svPtr, struct arrival_loss *alPtr, int len, int currLen, bool simType){
 
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
@@ -40,7 +40,7 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		svPtr->x[idleOffset] = 1;
 		eventsPtr->completionTimes2[idleOffset] = getService2(tPtr->current);
 	}
-	else if(svPtr->l > N + len) {
+	else if(svPtr->l > N + currLen) {
 		//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
 
 		struct job *tailJob = (struct job *) malloc(sizeof(struct job));

@@ -99,6 +99,16 @@ void computeInterval(struct result_finite *ret)
 				errorMallocMain(-1321);
 		}
 	}
+
+	for(int center=0; center<CENTERS; center++) {
+		for(int interval=0; interval<INTERVALS; interval++) {
+			for(int stat=0; stat<STATISTICS; stat++) {
+				mean[center][interval][stat] = 0.0;
+				sum[center][interval][stat] = 0.0;
+				w[center][interval][stat] = 0.0;
+			}
+		}
+	}
 	
 	for(int centro=0; centro<CENTERS; centro++)
 	{
@@ -108,7 +118,7 @@ void computeInterval(struct result_finite *ret)
 			{
 				for(int replica=0;replica<REPLICATIONS;replica++)
 				{
-					diffWelford= ret->nsim[replica][centro][intervallo][stat] - mean[centro][intervallo][stat];
+					diffWelford = ret->nsim[replica][centro][intervallo][stat] - mean[centro][intervallo][stat];
 					sum[centro][intervallo][stat] += diffWelford * diffWelford * ((replica+1) - 1.0) / (replica+1);
 					mean[centro][intervallo][stat] += diffWelford / (replica+1);
 				}
@@ -130,9 +140,91 @@ void computeInterval(struct result_finite *ret)
     				t = idfStudent(r - 1, u);                 					/* critical value of t */
     				w[centro][interval][stat] = t * stdv / sqrt(r - 1);         /* interval half width */
     				
-					printf("INTERVALLO-FINITO-statistica-%d-centro-%d-fascia-%d ------ %10.6f +/- %6.6f\n", stat, centro, interval, mean[centro][interval][stat], w[centro][interval][stat]);
+					//printf("INTERVALLO-FINITO-statistica-%d-centro-%d-fascia-%d ------ %10.6f +/- %6.6f\n", stat, centro, interval, mean[centro][interval][stat], w[centro][interval][stat]);
 			
 			}
+		
+		}
+	
+	}
+
+}
+
+void computeQoSInterval(struct result_finite *ret) {
+
+	double diffWelford;
+
+	double **mean = (double **)malloc(sizeof(double *)*CENTERS);
+	if(mean==NULL)
+		errorMallocMain(-1045);
+
+	for(int center=0; center<CENTERS; center++)
+	{
+		mean[center] = (double *) malloc(sizeof(double) * STATISTICS);
+		if(mean[center]==NULL)
+			errorMallocMain(-1046);
+	}
+	
+	
+	double **sum = (double **)malloc(sizeof(double *)*CENTERS);
+	if(sum==NULL)
+		errorMallocMain(-1047);
+		
+	for(int center=0; center<CENTERS; center++)
+	{
+		sum[center] = (double *) malloc(sizeof(double) * STATISTICS);
+		if(sum[center]==NULL)
+			errorMallocMain(-1048);
+	}
+	
+	
+	double **w = (double **)malloc(sizeof(double *)*CENTERS);
+	if(w==NULL)
+		errorMallocMain(-1049);
+		
+	for(int center=0; center<CENTERS; center++)
+	{
+		w[center] = (double *) malloc(sizeof(double) * STATISTICS);
+		if(w[center]==NULL)
+			errorMallocMain(-1050);
+	}
+
+	for(int center=0; center<CENTERS; center++) {
+		for(int stat=0; stat<STATISTICS; stat++) {
+			mean[center][stat] = 0.0;
+			sum[center][stat] = 0.0;
+			w[center][stat] = 0.0;
+		}		
+	}
+	
+	
+	for(int centro=0; centro<CENTERS; centro++)
+	{
+		for(int stat=0;stat<STATISTICS;stat++)
+		{
+			for(int replica=0;replica<REPLICATIONS;replica++)
+			{
+				diffWelford = ret->samplingTime[replica][centro][stat][167] - mean[centro][stat];
+				sum[centro][stat] += diffWelford * diffWelford * ((replica+1) - 1.0) / (replica+1);
+				mean[centro][stat] += diffWelford / (replica+1);
+			}
+		}
+		
+	}
+	
+	int r=REPLICATIONS;
+	double u, t, stdv;
+	
+	for(int centro=0;centro<CENTERS;centro++)
+	{
+		for(int stat=0; stat<STATISTICS;stat++)
+		{
+			stdv = sqrt(sum[centro][stat] / r);
+			u = 1.0 - 0.5 * (1.0 - LOC);              			/* interval parameter  */
+    		t = idfStudent(r - 1, u);         					/* critical value of t */
+    		w[centro][stat] = t * stdv / sqrt(r - 1);      	    /* interval half width */
+    			
+			printf("INTERVALLO-FINITO-statistica-%d-centro-%d ------ %10.6f +/- %6.6f\n", stat, centro, mean[centro][stat], w[centro][stat]);
 		
 		}
 	
@@ -145,7 +237,7 @@ void computeGain(struct result_finite *ret, int **array_m)
 	int last = STOP/SAMPLINGINTERVAL;
 	double sum = 0.0;
 	
-	for(int replica = 0; replica<REPLICATIONS;replica++)
+	for(int replica = 0; replica<REPLICATIONS; replica++)
 	{
 		//Numero di jobs che hanno partecipato al guadagno del ristorante
 		sum += (ret->samplingTime[replica][2][7][last-1] + ret->samplingTime[replica][2][8][last-1]);
@@ -160,7 +252,7 @@ void computeGain(struct result_finite *ret, int **array_m)
 	double ct = 0.0;
 	double cplay = 0.0;
 
-	for(int fascia = 0; fascia<6; fascia++)
+	for(int fascia = 0; fascia<INTERVALS; fascia++)
 	{
 		cop += array_m[fascia][0] * COP * array_fascia[fascia];
 		ce += array_m[fascia][1] * CE * array_fascia[fascia];
@@ -407,6 +499,7 @@ int main(int argc, char **argv){
 	}
 
 	computeInterval(ret);	//Funzione che calcola gli intervalli di confidenza delle statistiche di output per tutte le fasce orarie relativamente alla simulazione a orizzonte finito
+	computeQoSInterval(ret);	//Funzione che calcola gli intervalli di confidenza delle statistiche di output per l'intera giornata relativamente alla simulazione a orizzonte finito
 	computeGain(ret, array_m);	//Funzione che calcola il profitto (mensile) del sistema
 	
 	int interval = atoi(argv[1]);
