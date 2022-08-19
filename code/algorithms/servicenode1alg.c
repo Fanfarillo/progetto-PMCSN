@@ -67,6 +67,13 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 		eventsPtr->familyArr1.isFamilyArrivalActive = false;
 	}
 
+	#ifdef AVANZATO
+		if(svPtr->qF >= H) {
+			alPtr->numLoss_f = alPtr->numLoss_f + 1;
+			goto END1;
+		}
+	#endif
+
 	int idleOffset = getIdleOffset1(len, svPtr);
 	bool existsCar = doesExistCar1(len, svPtr);
 
@@ -75,26 +82,32 @@ void familyArrival1(struct event_list *eventsPtr, struct time *tPtr, struct stat
 		eventsPtr->completionTimes1[idleOffset] = getService1(tPtr->current);
 	}
 	else {
-		if(svPtr->qF > N) {
-			//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
-			struct job *tailJob = (struct job *) malloc(sizeof(struct job));
-			tailJob->id = alPtr->index_f;
-			tailJob->abandonTime = getAbandon1(tPtr->current);
-			//inserimento in coda
-			tailJob->next = NULL;
-			tailJob->prev = eventsPtr->tail1;
+		#ifndef AVANZATO
+			if(svPtr->qF > N) {
+				//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
+				struct job *tailJob = (struct job *) malloc(sizeof(struct job));
+				tailJob->id = alPtr->index_f;
+				tailJob->abandonTime = getAbandon1(tPtr->current);
+				//inserimento in coda
+				tailJob->next = NULL;
+				tailJob->prev = eventsPtr->tail1;
 
-			if(eventsPtr->tail1 != NULL) {
-				eventsPtr->tail1->next = tailJob;
-			}
-			else {
-				eventsPtr->head1 = tailJob;
-			}
-			eventsPtr->tail1 = tailJob;
+				if(eventsPtr->tail1 != NULL) {
+					eventsPtr->tail1->next = tailJob;
+				}
+				else {
+					eventsPtr->head1 = tailJob;
+				}
+				eventsPtr->tail1 = tailJob;
 
-		}
+			}
+		#endif
+
 		svPtr->qF++;
 	}
+
+	END1:
+		return;
 
 }
 
@@ -122,20 +135,24 @@ void carDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct state
 		svPtr->qF--;
 		eventsPtr->completionTimes1[serverOffset] = getService1(tPtr->current);
 		svPtr->x[serverOffset] = 1;
-		if(eventsPtr->head1 != NULL) {
-			//Rimozione del nodo testa dalla lista degli abbandoni
 
-			struct job *toRemove = eventsPtr->head1;
-			if(toRemove->next == NULL) {
-				eventsPtr->head1 = NULL;
-				eventsPtr->tail1 = NULL;
+		#ifndef AVANZATO
+			if(eventsPtr->head1 != NULL) {
+				//Rimozione del nodo testa dalla lista degli abbandoni
+
+				struct job *toRemove = eventsPtr->head1;
+				if(toRemove->next == NULL) {
+					eventsPtr->head1 = NULL;
+					eventsPtr->tail1 = NULL;
+				}
+				else {
+					eventsPtr->head1 = toRemove->next;
+					eventsPtr->head1->prev = NULL;
+				}
+				free(toRemove);
 			}
-			else {
-				eventsPtr->head1 = toRemove->next;
-				eventsPtr->head1->prev = NULL;
-			}
-			free(toRemove);
-		}
+		#endif
+
 	}
 	else{
 		eventsPtr->completionTimes1[serverOffset] = (double) INFINITY;
@@ -177,20 +194,24 @@ void familyDeparture1(struct event_list *eventsPtr, struct time *tPtr, struct st
 	else if((svPtr->qA==0 && svPtr->qF!=0) || (svPtr->qF!=0 && existsCar)){
 		eventsPtr->completionTimes1[serverOffset] = getService1(tPtr->current);
 		svPtr->qF--;
-		if(eventsPtr->head1 != NULL) {
-			//Rimozione del nodo testa dalla lista degli abbandoni
 
-			struct job *toRemove = eventsPtr->head1;
-			if(toRemove->next == NULL) {
-				eventsPtr->head1 = NULL;
-				eventsPtr->tail1 = NULL;
+		#ifndef AVANZATO
+			if(eventsPtr->head1 != NULL) {
+				//Rimozione del nodo testa dalla lista degli abbandoni
+
+				struct job *toRemove = eventsPtr->head1;
+				if(toRemove->next == NULL) {
+					eventsPtr->head1 = NULL;
+					eventsPtr->tail1 = NULL;
+				}
+				else {
+					eventsPtr->head1 = toRemove->next;
+					eventsPtr->head1->prev = NULL;
+				}
+				free(toRemove);
 			}
-			else {
-				eventsPtr->head1 = toRemove->next;
-				eventsPtr->head1->prev = NULL;
-			}
-			free(toRemove);
-		}
+		#endif
+
 	}
 	else {
 		eventsPtr->completionTimes1[serverOffset] = (double) INFINITY;
@@ -268,20 +289,23 @@ void fixState1(struct event_list *eventsPtr, struct time *tPtr, struct state_var
 			svPtr->qF--;
 			eventsPtr->completionTimes1[firstServerOffset+i] = getService1(tPtr->current);
 			svPtr->x[firstServerOffset+i] = 1;
-			if(eventsPtr->head1 != NULL) {
-				//Rimozione del nodo testa dalla lista degli abbandoni
 
-				struct job *toRemove = eventsPtr->head1;
-				if(toRemove->next == NULL) {
-					eventsPtr->head1 = NULL;
-					eventsPtr->tail1 = NULL;
+			#ifndef AVANZATO
+				if(eventsPtr->head1 != NULL) {
+					//Rimozione del nodo testa dalla lista degli abbandoni
+
+					struct job *toRemove = eventsPtr->head1;
+					if(toRemove->next == NULL) {
+						eventsPtr->head1 = NULL;
+						eventsPtr->tail1 = NULL;
+					}
+					else {
+						eventsPtr->head1 = toRemove->next;
+						eventsPtr->head1->prev = NULL;
+					}
+					free(toRemove);
 				}
-				else {
-					eventsPtr->head1 = toRemove->next;
-					eventsPtr->head1->prev = NULL;
-				}
-				free(toRemove);
-			}
+			#endif
 
 		}
 

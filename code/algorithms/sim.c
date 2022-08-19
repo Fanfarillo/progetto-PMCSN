@@ -1421,12 +1421,18 @@ double*** infinite_sim(int *m)
 	if(w==NULL)
 		errorMalloc(-1040);
 
-	for(int j=0; j<STATISTICS; j++){
-		w[j]=(double *)malloc(sizeof(double));
+	for(int j=0; j<CENTERS; j++){
+		w[j]=(double *)malloc(sizeof(double)*STATISTICS);
 		if(w[j]==NULL)
 			errorMalloc(-1041);
 	}
-	
+
+	for(int i=0; i<CENTERS; i++){
+		for(int j=0; j<STATISTICS; j++) {
+			w[i][j]=0.0;
+		}
+	}
+
 	int n;
 	double u, t, stdv;
 	
@@ -1435,11 +1441,12 @@ double*** infinite_sim(int *m)
 		{
 			n = count[i]/B;
 			stdv = sqrt(sum[i][j] / n);			
-    			u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */
-    			t = idfStudent(n - 1, u);                 /* critical value of t */
-    			w[i][j] = t * stdv / sqrt(n - 1);         /* interval half width */
+    		u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */
+    		t = idfStudent(n - 1, u);                 /* critical value of t */
+			w[i][j] = t * stdv / sqrt(n - 1);         /* interval half width */
 
-    			printf("INTERVALLO-INFINITO-statistica-%d-centro-%d ------ %10.6f +/- %6.6f\n", j, i, mean[i][j], w[i][j]);
+    		printf("INTERVALLO-INFINITO-statistica-%d-centro-%d ------ %10.6f +/- %6.6f\n", j, i, mean[i][j], w[i][j]);
+			fflush(stdout);
 		}
 	}
 	

@@ -225,6 +225,7 @@ void computeQoSInterval(struct result_finite *ret) {
     		w[centro][stat] = t * stdv / sqrt(r - 1);      	    /* interval half width */
     			
 			printf("INTERVALLO-FINITO-statistica-%d-centro-%d ------ %10.6f +/- %6.6f\n", stat, centro, mean[centro][stat], w[centro][stat]);
+			fflush(stdout);
 		
 		}
 	

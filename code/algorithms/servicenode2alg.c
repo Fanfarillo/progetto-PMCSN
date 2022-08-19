@@ -21,8 +21,12 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 
 	//incremento il numero delle famiglie che arrivano al centro
 	alPtr->index_f = alPtr->index_f + 1;
-	//incremento la popolazione di 1
-	svPtr->l = svPtr->l + 1;
+
+	#ifndef AVANZATO
+		//incremento la popolazione di 1
+		svPtr->l = svPtr->l + 1;
+	#endif
+
 	//genero l'istante di tempo del prossimo arrivo della famiglia
 	eventsPtr->familyArr2.familyArrivalTime = getFamilyArrival2(tPtr->current);
 
@@ -34,6 +38,15 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		
 	}
 
+	#ifdef AVANZATO
+		if(svPtr->l >= H+currLen) {
+			alPtr->numLoss_f = alPtr->numLoss_f + 1;
+			goto END2;
+		}
+		else
+			svPtr->l = svPtr->l + 1;
+	#endif
+
 	int idleOffset = getIdleOffset2(len, svPtr);
 
 	if(idleOffset >= 0) {
@@ -41,24 +54,29 @@ void arrival2(struct event_list *eventsPtr, struct time *tPtr, struct state_vari
 		eventsPtr->completionTimes2[idleOffset] = getService2(tPtr->current);
 	}
 	else if(svPtr->l > N + currLen) {
-		//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
+		#ifndef AVANZATO
+			//Inserimento in coda di un nuovo nodo all'interno della lista degli abbandoni
 
-		struct job *tailJob = (struct job *) malloc(sizeof(struct job));
-		tailJob->id = alPtr->index_f;
-		tailJob->abandonTime = getAbandon2(tPtr->current);
-		//inserimento in coda
-		tailJob->next = NULL;
-		tailJob->prev = eventsPtr->tail2;
+			struct job *tailJob = (struct job *) malloc(sizeof(struct job));
+			tailJob->id = alPtr->index_f;
+			tailJob->abandonTime = getAbandon2(tPtr->current);
+			//inserimento in coda
+			tailJob->next = NULL;
+			tailJob->prev = eventsPtr->tail2;
 
-		if(eventsPtr->tail2 != NULL) {
-			eventsPtr->tail2->next = tailJob;
-		}
-		else {
-			eventsPtr->head2 = tailJob;
-		}
-		eventsPtr->tail2 = tailJob;
+			if(eventsPtr->tail2 != NULL) {
+				eventsPtr->tail2->next = tailJob;
+			}
+			else {
+				eventsPtr->head2 = tailJob;
+			}
+			eventsPtr->tail2 = tailJob;
+		#endif
 
 	}
+
+	END2:
+		return;
 
 }
 
@@ -67,20 +85,22 @@ void departure2(struct event_list *eventsPtr, struct time *tPtr, struct state_va
 	svPtr->l = svPtr->l - 1;
 	alPtr -> compl_f += 1;
 
-	if(eventsPtr->head2 != NULL) {
-		//Rimozione del nodo testa dalla lista degli abbandoni
+	#ifndef AVANZATO
+		if(eventsPtr->head2 != NULL) {
+			//Rimozione del nodo testa dalla lista degli abbandoni
 
-		struct job *toRemove = eventsPtr->head2;
-		if(toRemove->next == NULL) {
-			eventsPtr->head2 = NULL;
-			eventsPtr->tail2 = NULL;
+			struct job *toRemove = eventsPtr->head2;
+			if(toRemove->next == NULL) {
+				eventsPtr->head2 = NULL;
+				eventsPtr->tail2 = NULL;
+			}
+			else {
+				eventsPtr->head2 = toRemove->next;
+				eventsPtr->head2->prev = NULL;
+			}
+			free(toRemove);
 		}
-		else {
-			eventsPtr->head2 = toRemove->next;
-			eventsPtr->head2->prev = NULL;
-		}
-		free(toRemove);
-	}
+	#endif
 	
 	if(svPtr->x[serverOffset] < 0) {
 		eventsPtr->completionTimes2[serverOffset] = (double) INFINITY;
@@ -160,21 +180,24 @@ void fixState2(struct event_list *eventsPtr, struct time *tPtr, struct state_var
 		for(int i=0; i<numInService; i++) {
 			eventsPtr->completionTimes2[firstServerOffset+i] = getService2(tPtr->current);
 			svPtr->x[firstServerOffset+i] = 1;
-			if(eventsPtr->head2 != NULL) {
-				//Rimozione del nodo testa dalla lista degli abbandoni
 
-				struct job *toRemove = eventsPtr->head2;
-				if(toRemove->next == NULL) {
-					eventsPtr->head2 = NULL;
-					eventsPtr->tail2 = NULL;
-				}
-				else {
-					eventsPtr->head2 = toRemove->next;
-					eventsPtr->head2->prev = NULL;
-				}
-				free(toRemove);
+			#ifndef AVANZATO
+				if(eventsPtr->head2 != NULL) {
+					//Rimozione del nodo testa dalla lista degli abbandoni
 
-			}
+					struct job *toRemove = eventsPtr->head2;
+					if(toRemove->next == NULL) {
+						eventsPtr->head2 = NULL;
+						eventsPtr->tail2 = NULL;
+					}
+					else {
+						eventsPtr->head2 = toRemove->next;
+						eventsPtr->head2->prev = NULL;
+					}
+					free(toRemove);
+
+				}
+			#endif
 
 		}
 
