@@ -1407,6 +1407,14 @@ double*** infinite_sim(int *m)
 			printf("\n");
 		}*/
 
+		#ifdef AVANZATO
+			if(sv1[0].qF > H || sv2[0].l > m[1]+H) {
+				printf("ERRORE: capacità massima delle code finite non rispettata.\n");
+				fflush(stdout);
+				exit(-9);
+			}
+		#endif
+
 		free(nextAb1);
 		free(nextAb2);
 		free(nextCom1);
