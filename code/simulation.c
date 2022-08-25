@@ -44,6 +44,7 @@ void errorVerify(int code) {
 
 }
 
+//FUNZIONE NON PIU' UTILIZZATA AI FINI DEL PROGETTO: SIAMO RICORSI A computeQoSInterval() A SEGUITO DELLA DECISIONE DI FISSARE I QoS PER L'INTERA GIORNATA DI LAVORO E NON PER LE SINGOLE FASCE ORARIE
 void computeInterval(struct result_finite *ret)
 {
 
@@ -282,7 +283,6 @@ void finiteVerify(struct result_finite *ret) {
 					errorVerify(-2004);
 
 				if(ret->samplingTime[replica][center][0][samp] > 1 || ret->samplingTime[replica][center][0][samp] < 0 || ret->samplingTime[replica][center][10][samp] > 1 || ret->samplingTime[replica][center][10][samp] < 0) {
-					//printf("ERRORE - rho = %f\t replica = %d\t centro = %d\t samp = %d\n", ret->samplingTime[replica][center][0][samp], replica, center, samp);
 					errorVerify(-2005);
 				}
 
@@ -303,7 +303,6 @@ void infiniteVerify(double ***siminf, int* m){
 				errorVerify(-2001);
 
 			if(siminf[center][0][batch] > 1 || siminf[center][0][batch] < 0 || siminf[center][10][batch] > 1 || siminf[center][10][batch] < 0) {
-				//printf("ERRORE - rho = %f\n", siminf[center][0][batch]);
 				errorVerify(-2002);
 			}
 
@@ -425,24 +424,6 @@ int main(int argc, char **argv){
 	struct result_finite *ret = finite_sim(array_m);
 	finiteVerify(ret);
 	
-	/*for(int replica=0;replica<REPLICATIONS;replica++)
-	{
-		printf("-------------------------------------- REPLICA %d -----------------------------\n", replica);
-		for(int center=0;center<CENTERS;center++)
-		{
-			printf("-------------------------------------- CENTRO %d -----------------------------\n", center);
-			for(int interval=0;interval<INTERVALS;interval++)
-			{
-				printf("-------------------------------------- INTERVALLO %d -----------------------------\n", interval);
-				for(int stat=0;stat<STATISTICS;stat++)
-				{
-					printf("%d: %f\n", stat, ret->nsim[replica][center][interval][stat]);
-					fflush(stdout);	
-				}
-			}
-		}
-	}*/
-	
 	char *stat_value;
 	FILE *fp = NULL;
 
@@ -499,7 +480,7 @@ int main(int argc, char **argv){
 		}
 	}
 
-	computeInterval(ret);	//Funzione che calcola gli intervalli di confidenza delle statistiche di output per tutte le fasce orarie relativamente alla simulazione a orizzonte finito
+	computeInterval(ret);		//Funzione che calcola gli intervalli di confidenza delle statistiche di output per tutte le fasce orarie relativamente alla simulazione a orizzonte finito
 	computeQoSInterval(ret);	//Funzione che calcola gli intervalli di confidenza delle statistiche di output per l'intera giornata relativamente alla simulazione a orizzonte finito
 	computeGain(ret, array_m);	//Funzione che calcola il profitto (mensile) del sistema
 	

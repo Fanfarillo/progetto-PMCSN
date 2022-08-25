@@ -3,11 +3,6 @@
 import matplotlib.pyplot as plt
 import numpy as npy
 
-#----------------------------------------------------------------------------------
-#Attenzione: questo programma funziona con un numero di variate random ben preciso.
-#Se si cambia il file histogram.c potrebbe non funzionare correttamente
-#----------------------------------------------------------------------------------
-
 BATCHNUM = 128
 STATISTICS = 11
 
@@ -67,7 +62,6 @@ def plotInfiniteHorizon(centro):
 				for rho in rigaSplittata:
 					if rho!="\n":
 						item1 = item1 + 1
-						print(rho)
 						statistiche[stat].append(float(rho))			
 			elif(stat==1):		
 				rigaSplittata = line.split(";")
@@ -133,20 +127,11 @@ def plotInfiniteHorizon(centro):
 			numeroBatch = numeroBatch + 1
 			if(numeroBatch%BATCHNUM==0):
 				stat=stat+1
-			
-	print("item1 = %d" %item1)
-	print("item2 = %d" %item1)
-	print("item3 = %d" %item1)
-	print("item4 = %d" %item1)
-	print("item5 = %d" %item1)
-	print("item6 = %d" %item1)
-	print("item7 = %d" %item1)
-	print("item8 = %d" %item1)
-	print("item9 = %d" %item1)
-	print("item10 = %d" %item1)
-	print("item11 = %d" %item1)
 
-	"""risposte = statistiche[5]
+	"""
+	TENTATIVO DI UTILIZZARE L'AUTOCORRELAZIONE PER IL CALCOLO DI B
+
+	risposte = statistiche[5]
 	rjs=[] 
 
 	for j in range(1, 40):
@@ -177,14 +162,14 @@ def plotInfiniteHorizon(centro):
 	plt.title("AUTOCORRELAZIONE")
 	plt.show()
 
-	return 0"""
+	return 0
+	"""
 
 	fontLabel = {'color': 'black', 'size': 28}
 	fontTitle = {'color': 'black', 'size': 36}
 	FONTNUM = 36
 	
 	y = statistiche[0]
-	print(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -195,8 +180,6 @@ def plotInfiniteHorizon(centro):
 	
 	
 	y = statistiche[1]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -206,8 +189,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[2]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -217,8 +198,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[3]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -228,8 +207,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[4]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -239,8 +216,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[5]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -250,8 +225,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[6]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -262,8 +235,6 @@ def plotInfiniteHorizon(centro):
 	
 	
 	y = statistiche[7]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -273,8 +244,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[8]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -284,8 +253,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[9]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -295,8 +262,6 @@ def plotInfiniteHorizon(centro):
 	plt.show()
 	
 	y = statistiche[10]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -304,7 +269,6 @@ def plotInfiniteHorizon(centro):
 	plt.xlabel("Batch", fontdict=fontLabel)
 	plt.title("PROBABILITA' DI AVERE UNA PERDITA NEL SISTEMA", fontdict=fontTitle)
 	plt.show()
-	
 	
 	return 0
 	
@@ -350,8 +314,6 @@ def plotFiniteHorizon(centro):
 		statistiche[stat] = []
 		for replica in range(0,REPLICATIONS):
 			statistiche[stat].append([])
-		
-	#print(statistiche)
 	
 	filename = "../data/finite/servicenodesampling" + str(centro) +  ".dat"
 	f = open(filename, "r")	
@@ -455,18 +417,6 @@ def plotFiniteHorizon(centro):
 						statistiche[10][replica[10]].append(float(p))
 				replica[10] = replica[10] + 1
 			count = count + 1
-			
-	print("item1 = %d" %item1)
-	print("item2 = %d" %item1)
-	print("item3 = %d" %item1)
-	print("item4 = %d" %item1)
-	print("item5 = %d" %item1)
-	print("item6 = %d" %item1)
-	print("item7 = %d" %item1)
-	print("item8 = %d" %item1)
-	print("item9 = %d" %item1)
-	print("item10 = %d" %item1)
-	print("item11 = %d" %item1)
 	
 	#campioni
 	rho = []
@@ -507,8 +457,6 @@ def plotFiniteHorizon(centro):
 		count = 0
 		for j in stats[i]:
 			count = count + 1
-			#print(j)
-		print(count)
 		
 	#costruisco il grafico
 
@@ -517,7 +465,6 @@ def plotFiniteHorizon(centro):
 	FONTNUM = 36
 	
 	y = stats[0]
-	print(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -528,8 +475,6 @@ def plotFiniteHorizon(centro):
 	
 	
 	y = stats[1]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -539,8 +484,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[2]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -550,8 +493,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[3]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -561,8 +502,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[4]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -572,8 +511,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[5]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -583,8 +520,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[6]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -594,8 +529,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[7]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -605,8 +538,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[8]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -616,8 +547,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[9]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -627,8 +556,6 @@ def plotFiniteHorizon(centro):
 	plt.show()
 	
 	y = stats[10]
-	print(y)
-	#nparray = np.array(y)
 	plt.plot(y, color = 'r')
 	plt.xticks(fontsize=FONTNUM)
 	plt.yticks(fontsize=FONTNUM)
@@ -639,15 +566,14 @@ def plotFiniteHorizon(centro):
 		
 	return 0
 	
-	
 
-#plotFiniteHorizon(1)
-#plotFiniteHorizon(2)
-#plotFiniteHorizon(3)
-#plotFiniteHorizon(4)
-#plotFiniteHorizon(5)
-#plotInfiniteHorizon(1)
-#plotInfiniteHorizon(2)
+plotFiniteHorizon(1)
+plotFiniteHorizon(2)
+plotFiniteHorizon(3)
+plotFiniteHorizon(4)
+plotFiniteHorizon(5)
+plotInfiniteHorizon(1)
+plotInfiniteHorizon(2)
 plotInfiniteHorizon(3)
 plotInfiniteHorizon(4)
-#plotInfiniteHorizon(5)
+plotInfiniteHorizon(5)

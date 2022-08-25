@@ -955,55 +955,6 @@ void simulation(int **array_m, int replica, double**** nsim, double ****sampling
 			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
 		}
 
-		/*if(z) {
-			printf("Clock: %f\n", t->current);
-
-			printf("qA centro 1: %d\n", sv1[0].qA);
-			printf("qF centro 1: %d\n", sv1[0].qF);
-			printf("Serventi centro 1: ");
-			for(int k=0; k<maxArray[0]; k++) {
-				printf("%d, ", sv1[0].x[k]);
-			}
-			printf("\n");
-			printf("l centro 2: %d\n", sv2[0].l);
-			printf("Serventi centro 2: ");
-			for(int k=0; k<maxArray[1]; k++) {
-				printf("%d, ", sv2[0].x[k]);
-			}
-			printf("\n");
-			printf("qA centro 3: %d\n", sv1[1].qA);
-			printf("qF centro 3: %d\n", sv1[1].qF);
-			printf("Serventi centro 3: ");
-			for(int k=0; k<maxArray[2]; k++) {
-				printf("%d, ", sv1[1].x[k]);
-			}
-			printf("\n");
-			printf("l centro 4: %d\n", sv2[1].l);
-			printf("Serventi centro 4: ");
-			for(int k=0; k<maxArray[3]; k++) {
-				printf("%d, ", sv2[1].x[k]);
-			}
-			printf("\n");
-			printf("Serventi centro 5: ");
-			for(int k=0; k<maxArray[4]; k++) {
-				printf("%d, ", sv2[2].x[k]);
-			}
-			printf("\n");
-
-			for(int k=0; k<CENTERS; k++) {
-				printf("ALCUNE STATISTICHE PER IL CENTRO %d:\n", k+1);
-				printf("aSampling[%d].service = %f\n", k, aSampling[k].service);
-				printf("aSampling[%d].queue = %f\n", k, aSampling[k].queue);
-				printf("aSampling[%d].node = %f\n", k, aSampling[k].node);
-				printf("al[%d].compl_a = %d\n", k, al[k].compl_a);
-				printf("al[%d].compl_f = %d\n", k, al[k].compl_f);
-				printf("al[%d].index_a = %d\n", k, al[k].index_a);
-				printf("al[%d].index_f = %d\n", k, al[k].index_f);
-				printf("al[%d].numLoss_f = %d\n", k, al[k].numLoss_f);
-			}
-			printf("\n");
-		}*/
-
 		free(nextAb1);
 		free(nextAb2);
 		free(nextCom1);
@@ -1143,7 +1094,6 @@ void samplingBatch(int centerIndex, int *count, double ***siminf, double **sum, 
 		sum[centerIndex][i] += diffWelford * diffWelford * (n - 1.0) / n;
 		mean[centerIndex][i] += diffWelford / n;
 
-		//NEW
 		siminf[centerIndex][i][(count[centerIndex]/B)-1] = mean[centerIndex][i];
 	}
 			
@@ -1357,55 +1307,6 @@ double*** infinite_sim(int *m)
 			//printf("EVENTO: partenza di una famiglia dal centro 5.\n");
 			departure5(events, &sv2[2], nextCom5->serverOffset, &al[4]);
 		}
-
-		/*if(true) {
-			printf("Clock: %f\n", t->current);
-
-			printf("qA centro 1: %d\n", sv1[0].qA);
-			printf("qF centro 1: %d\n", sv1[0].qF);
-			printf("Serventi centro 1: ");
-			for(int k=0; k<maxArray[0]; k++) {
-				printf("%d, ", sv1[0].x[k]);
-			}
-			printf("\n");
-			printf("l centro 2: %d\n", sv2[0].l);
-			printf("Serventi centro 2: ");
-			for(int k=0; k<maxArray[1]; k++) {
-				printf("%d, ", sv2[0].x[k]);
-			}
-			printf("\n");
-			printf("qA centro 3: %d\n", sv1[1].qA);
-			printf("qF centro 3: %d\n", sv1[1].qF);
-			printf("Serventi centro 3: ");
-			for(int k=0; k<maxArray[2]; k++) {
-				printf("%d, ", sv1[1].x[k]);
-			}
-			printf("\n");
-			printf("l centro 4: %d\n", sv2[1].l);
-			printf("Serventi centro 4: ");
-			for(int k=0; k<maxArray[3]; k++) {
-				printf("%d, ", sv2[1].x[k]);
-			}
-			printf("\n");
-			printf("Serventi centro 5: ");
-			for(int k=0; k<maxArray[4]; k++) {
-				printf("%d, ", sv2[2].x[k]);
-			}
-			printf("\n");
-
-			for(int k=0; k<CENTERS; k++) {
-				printf("ALCUNE STATISTICHE PER IL CENTRO %d:\n", k+1);
-				printf("aSampling[%d].service = %f\n", k, aSampling[k].service);
-				printf("aSampling[%d].queue = %f\n", k, aSampling[k].queue);
-				printf("aSampling[%d].node = %f\n", k, aSampling[k].node);
-				printf("al[%d].compl_a = %d\n", k, al[k].compl_a);
-				printf("al[%d].compl_f = %d\n", k, al[k].compl_f);
-				printf("al[%d].index_a = %d\n", k, al[k].index_a);
-				printf("al[%d].index_f = %d\n", k, al[k].index_f);
-				printf("al[%d].numLoss_f = %d\n", k, al[k].numLoss_f);
-			}
-			printf("\n");
-		}*/
 
 		#ifdef AVANZATO
 			if(sv1[0].qF > H || sv2[0].l > m[1]+H) {
